@@ -1185,12 +1185,14 @@ def peers_menu() -> None:
         print()
         menu_option(5, "List peers", "Show all configured clients")
         menu_option(6, "Show peer", "View details for one client")
+        print()
         menu_option(7, "Set peer expiry", "Set or clear automatic access expiry")
         menu_option(8, "Revoke peer", "Disable and retain a peer record with audit history")
         menu_option(9, "Rotate peer keys", "Generate a fresh keypair and update the peer config")
+        print()
         menu_option(10, "Import peers", "Add peers from the selected interface configuration")
         menu_option(11, "Show QR code", "Display a saved peer config as a terminal QR code")
-        menu_option(12, "Manage interfaces", "Create, select, or delete WireGuard interfaces")
+        print()
         print("  0) Back\n")
 
         choice = input("Select option: ").strip()
@@ -1217,8 +1219,6 @@ def peers_menu() -> None:
             import_server_peers()
         elif choice == "11":
             show_qr_code()
-        elif choice == "12":
-            manage_interfaces()
         elif choice == "0":
             break
         else:
