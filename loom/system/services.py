@@ -1,0 +1,146 @@
+"""System service management."""
+import subprocess
+from dataclasses import dataclass
+
+
+@dataclass
+class ServiceStatus:
+    """Status of a system service."""
+
+    name: str
+    is_active: bool
+    is_enabled: bool
+    description: str | None = None
+
+
+class ServiceManager:
+    """Manage system services."""
+
+    def __init__(self):
+        pass
+
+    def start(self, service: str) -> bool:
+        """Start a service."""
+        try:
+            result = subprocess.run(
+                ["systemctl", "start", service],
+                capture_output=True,
+                timeout=30,
+            )
+
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def stop(self, service: str) -> bool:
+        """Stop a service."""
+        try:
+            result = subprocess.run(
+                ["systemctl", "stop", service],
+                capture_output=True,
+                timeout=30,
+            )
+
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def restart(self, service: str) -> bool:
+        """Restart a service."""
+        try:
+            result = subprocess.run(
+                ["systemctl", "restart", service],
+                capture_output=True,
+                timeout=30,
+            )
+
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def reload(self, service: str) -> bool:
+        """Reload a service."""
+        try:
+            result = subprocess.run(
+                ["systemctl", "reload", service],
+                capture_output=True,
+                timeout=30,
+            )
+
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def enable(self, service: str) -> bool:
+        """Enable a service (start on boot)."""
+        try:
+            result = subprocess.run(
+                ["systemctl", "enable", service],
+                capture_output=True,
+                timeout=30,
+            )
+
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def disable(self, service: str) -> bool:
+        """Disable a service (don't start on boot)."""
+        try:
+            result = subprocess.run(
+                ["systemctl", "disable", service],
+                capture_output=True,
+                timeout=30,
+            )
+
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def is_active(self, service: str) -> bool:
+        """Check if a service is currently active."""
+        try:
+            result = subprocess.run(
+                ["systemctl", "is-active", "--quiet", service],
+                capture_output=True,
+                timeout=5,
+            )
+
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def is_enabled(self, service: str) -> bool:
+        """Check if a service is enabled."""
+        try:
+            result = subprocess.run(
+                ["systemctl", "is-enabled", "--quiet", service],
+                capture_output=True,
+                timeout=5,
+            )
+
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def get_status(self, service: str) -> ServiceStatus:
+        """Get full status of a service."""
+        return ServiceStatus(
+            name=service,
+            is_active=self.is_active(service),
+            is_enabled=self.is_enabled(service),
+        )
+
+    def get_status_text(self, service: str) -> str | None:
+        """Get full status text for a service."""
+        try:
+            result = subprocess.run(
+                ["systemctl", "status", service],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+
+            return result.stdout if result.returncode == 0 else None
+        except Exception:
+            return None
