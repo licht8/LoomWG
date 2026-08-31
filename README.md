@@ -37,7 +37,7 @@ chmod +x ./run.sh
 The recommended startup flow is the project script:
 
 ```bash
-sudo ./run.sh
+./run.sh
 ```
 
 ## Project Structure
