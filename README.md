@@ -26,12 +26,10 @@ LoomWG is a professional Python-based CLI application for installing, configurin
 
 ## Installation
 
-### From Source
-
 ```bash
 git clone https://github.com/licht8/LoomWG.git
-cd loomwg
-pip install -e .
+cd LoomWG
+chmod +x ./run.sh
 ```
 
 ### Usage
@@ -39,13 +37,7 @@ pip install -e .
 The recommended startup flow is the project script:
 
 ```bash
-sudo bash ./run.sh
-```
-
-Or after installation:
-
-```bash
-sudo loomwg
+sudo ./run.sh
 ```
 
 ## Project Structure
