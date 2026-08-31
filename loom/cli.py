@@ -2483,12 +2483,22 @@ def set_peer_expiry() -> None:
 
 
 def import_server_peers() -> None:
-    """Import public peer entries from the selected interface config."""
+    """Import peers and create replacement client artifacts."""
     clear_screen()
     section_banner("Import peers", f"Import clients from {selected_interface()}")
     peer_mgr = PeerManager()
     interface = selected_interface()
-    entries = ConfigGenerator.parse_server_peers(interface_config_path(interface))
+    config_path = interface_config_path(interface)
+    entries = ConfigGenerator.parse_server_peers(config_path)
+    server_cfg = ServerConfig.from_file(config_path)
+    detector = SystemDetector().detect()
+    manager = WireGuardManager()
+    generator = ConfigGenerator()
+    client_store = ClientConfigStore(interface_name=interface)
+    original_config = config_path.read_text(encoding="utf-8") if config_path.exists() else None
+    original_peers = dict(peer_mgr.peers)
+    changed_live: list[tuple[str, str, str, str]] = []
+    created_artifacts: list[tuple[Path, Path | None]] = []
     imported = 0
     for index, entry in enumerate(entries, 1):
         if peer_mgr.get_peer_by_public_key(entry["public_key"]):
@@ -2500,8 +2510,77 @@ def import_server_peers() -> None:
             continue
         name = f"imported-{index}"
         while peer_mgr.peer_exists(name): name += "-x"
-        if peer_mgr.add_peer(Peer(name=name, ipv4_address=ipv4, ipv6_address=ipv6, public_key=entry["public_key"])):
+
+        # The original client private key cannot be recovered from wg0.conf.
+        # Generate a replacement keypair and keep the server/client entries aligned.
+        keypair = KeyManager.generate_keypair()
+        try:
+            if not generator.remove_peer_from_server_config(config_path, entry["public_key"]):
+                raise RuntimeError(f"Could not replace peer '{name}' in the server configuration")
+            if not generator.append_peer_to_server_config(
+                config_path, keypair.public_key, ipv4, ipv6
+            ):
+                raise RuntimeError(f"Could not add peer '{name}' to the server configuration")
+
+            candidate = config_path.read_text(encoding="utf-8")
+            valid, errors = generator.validate_config(candidate)
+            server_valid, server_errors = generator.validate_server_config(candidate)
+            if not (valid and server_valid):
+                raise RuntimeError("; ".join(errors + server_errors))
+
+            if manager.is_interface_active(interface):
+                if not manager.remove_peer_from_interface(interface, entry["public_key"]):
+                    raise RuntimeError(f"Could not remove the old key for '{name}'")
+                if not manager.add_peer_to_interface(
+                    interface, keypair.public_key, ipv4, client_ipv6=ipv6
+                ):
+                    raise RuntimeError(f"Could not add the replacement key for '{name}'")
+                changed_live.append((entry["public_key"], keypair.public_key, ipv4, ipv6))
+
+            peer_conf = generator.generate_peer_config(
+                peer_ipv4=ipv4,
+                peer_ipv6=ipv6,
+                private_key=keypair.private_key,
+                server_public_key=server_cfg.public_key,
+                server_endpoint=detector.public_ip or "YOUR_SERVER_IP",
+                server_port=server_cfg.listen_port,
+                dns_primary=server_cfg.dns_primary,
+                dns_secondary=server_cfg.dns_secondary,
+            )
+            peer_mgr.peers[name] = Peer(
+                name=name,
+                ipv4_address=ipv4,
+                ipv6_address=ipv6,
+                public_key=keypair.public_key,
+                private_key=keypair.private_key,
+            )
+            if not peer_mgr.save():
+                raise RuntimeError(f"Could not save imported peer '{name}'")
+            config_artifact = client_store.save_peer_config(name, peer_conf)
+            qr_artifact = client_store.save_qr_code(name, peer_conf)
+            created_artifacts.append((config_artifact, qr_artifact))
+            if qr_artifact is None:
+                console.print(
+                    f"[yellow]Warning: QR image unavailable for '{name}'.[/yellow]"
+                )
             imported += 1
+        except Exception as exc:
+            if original_config is not None:
+                config_path.write_text(original_config, encoding="utf-8")
+                config_path.chmod(0o600)
+            peer_mgr.peers = original_peers
+            peer_mgr.save()
+            for old_key, new_key, old_ipv4, old_ipv6 in reversed(changed_live):
+                manager.remove_peer_from_interface(interface, new_key)
+                manager.add_peer_to_interface(
+                    interface, old_key, old_ipv4, client_ipv6=old_ipv6
+                )
+            for config_artifact, qr_artifact in created_artifacts:
+                config_artifact.unlink(missing_ok=True)
+                if qr_artifact is not None:
+                    qr_artifact.unlink(missing_ok=True)
+            console.print(f"[red]Could not import '{name}': {exc}[/red]")
+            break
     console.print(f"[green]✓ Imported {imported} peer(s)[/green]")
     pause()
 
