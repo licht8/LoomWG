@@ -5,7 +5,7 @@
 <h1 align="center">LoomWG</h1>
 
 <p align="center">
-  LoomWG is a professional Python-based CLI application for installing, configuring, managing, monitoring, and troubleshooting WireGuard VPN servers on CentOS, Rocky Linux, AlmaLinux, and other RHEL-family Linux distributions.
+  LoomWG is a professional Python-based CLI application for installing, configuring, managing, monitoring, and troubleshooting WireGuard VPN servers on CentOS, Rocky Linux, AlmaLinux, Ubuntu, Debian, and other RHEL-family Linux distributions.
 </p>
 
 ## Features
@@ -23,7 +23,7 @@
 
 ## Requirements
 
-- **OS**: CentOS Stream 8/9/10, Rocky Linux 8/9/10, AlmaLinux 8/9/10, or other RHEL-family Linux distributions
+- **OS**: CentOS Stream 8/9/10, Rocky Linux 8/9/10, AlmaLinux 8/9/10, Ubuntu LTS, Debian, or other RHEL-family Linux distributions
 - **Root privileges**: Required for all operations
 - **Python**: 3.12+
 - **systemd**: For service management
@@ -43,6 +43,25 @@ The project script will bootstrap the environment as needed and can be used as t
 ```bash
 ./run.sh
 ```
+
+### Supported install flow
+
+LoomWG requires Python 3.12 or newer. The system Python may remain 3.9/3.8 on CentOS/Alma/Rocky or 3.10/3.11 on Debian/Ubuntu, so the project uses a dedicated virtual environment rather than replacing the system interpreter.
+
+For RHEL-family distributions:
+
+```bash
+sudo dnf install -y python3.12 python3.12-pip python3.12-devel
+```
+
+For Debian and Ubuntu:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-pip python3-venv python3-dev
+```
+
+If Python 3.12 is not already available on your Debian/Ubuntu release, install it via your distro's supported Python 3.12 repository or backports channel before continuing.
 
 ## Configuration
 

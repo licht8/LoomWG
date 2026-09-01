@@ -23,6 +23,13 @@ class PackageManager:
         self.last_debug: str = ""
 
     def is_installed(self, package: str) -> bool:
+        if self._is_apt_family():
+            result = self.runner.run(
+                ["bash", "-lc", f"dpkg-query -W -f='${{Status}}' {package} 2>/dev/null | grep -q 'install ok installed'"],
+                timeout=30,
+            )
+            return result.success
+
         result = self.runner.run(
             ["rpm", "-q", package],
         )
@@ -37,7 +44,7 @@ class PackageManager:
             self._ensure_epel_repo()
             self._fix_centos_stream_mirror_once()
 
-        install_command = ["dnf", "install", "-y", *packages]
+        install_command = self._install_command(packages)
         result = self.runner.run(
             install_command,
             timeout=300,
@@ -52,7 +59,7 @@ class PackageManager:
                 return True
             return False
 
-        if self._needs_epel_retry(result):
+        if self._is_rhel_family() and self._needs_epel_retry(result):
             if not self._enable_epel():
                 return False
 
@@ -84,15 +91,28 @@ class PackageManager:
         if not packages:
             return True
 
+        if self._is_apt_family():
+            command = ["apt-get", "remove", "-y", *packages]
+            result = self.runner.run(command, timeout=300)
+            self.last_debug = self._format_debug_output(command, result)
+            return result.success
+
+        command = ["dnf", "remove", "-y", *packages]
         result = self.runner.run(
-            ["dnf", "remove", "-y", *packages],
+            command,
             timeout=300,
         )
-        self.last_debug = self._format_debug_output(["dnf", "remove", "-y", *packages], result)
+        self.last_debug = self._format_debug_output(command, result)
 
         return result.success
 
     def update(self) -> bool:
+        if self._is_apt_family():
+            command = ["apt-get", "update"]
+            result = self.runner.run(command, timeout=300)
+            self.last_debug = self._format_debug_output(command, result)
+            return result.success
+
         command = ["dnf", "makecache", "--refresh"]
         result = self.runner.run(
             command,
@@ -386,15 +406,41 @@ class PackageManager:
         result = self.runner.run(["bash", "-lc", "rpm -q epel-release >/dev/null 2>&1 || ls /etc/yum.repos.d/epel*.repo >/dev/null 2>&1"], timeout=30)
         return result.success
 
-    def _is_rhel_family(self) -> bool:
+    def _is_apt_family(self) -> bool:
         result = self.runner.run(
             ["bash", "-lc", ". /etc/os-release 2>/dev/null; printf '%s' \"${ID:-}\"; printf '\n'; printf '%s' \"${ID_LIKE:-}\""],
             timeout=30,
         )
         if not result.success:
             return False
+
         combined = " ".join(part for part in [result.stdout, result.stderr] if part).lower()
-        return any(token in combined for token in ("rocky", "almalinux", "centos", "rhel", "fedora"))
+        if any(token in combined for token in ("ubuntu", "debian", "raspbian")):
+            return True
+        if any(token in combined for token in ("rocky", "almalinux", "centos", "rhel", "fedora")):
+            return False
+        return False
+
+    def _install_command(self, packages: list[str]) -> list[str]:
+        if self._is_apt_family():
+            return ["apt-get", "install", "-y", *packages]
+        return ["dnf", "install", "-y", *packages]
+
+    def _is_rhel_family(self) -> bool:
+        result = self.runner.run(
+            ["bash", "-lc", ". /etc/os-release 2>/dev/null; printf '%s' \"${ID:-}\"; printf '\n'; printf '%s' \"${ID_LIKE:-}\""],
+            timeout=30,
+        )
+        if result.success:
+            combined = " ".join(part for part in [result.stdout, result.stderr] if part).lower()
+            if any(token in combined for token in ("rocky", "almalinux", "centos", "rhel", "fedora")):
+                return True
+            if any(token in combined for token in ("ubuntu", "debian", "raspbian")):
+                return False
+
+        return (
+            self.runner.run(["bash", "-lc", "command -v dnf >/dev/null 2>&1 || command -v yum >/dev/null 2>&1"], timeout=30).success
+        )
 
     def _enable_epel(self) -> bool:
         install_epel = self.runner.run(

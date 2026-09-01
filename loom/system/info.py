@@ -72,7 +72,7 @@ class SystemDetector:
         """Run basic LoomWG system checks."""
 
         info = self.detect()
-        supported_os_ids = {"rocky", "almalinux", "centos", "rhel", "fedora"}
+        supported_os_ids = {"rocky", "almalinux", "centos", "rhel", "fedora", "ubuntu", "debian", "raspbian"}
         memory = self.get_memory_resources()
         disk_free = shutil.disk_usage("/").free
 
@@ -107,7 +107,7 @@ class SystemDetector:
             ),
             SystemCheck(
                 name="Package manager",
-                passed=info.package_manager == "dnf",
+                passed=info.package_manager in {"dnf", "apt"},
                 message=info.package_manager,
             ),
             SystemCheck(

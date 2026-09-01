@@ -309,7 +309,7 @@ def show_banner() -> None:
 ║                  LoomWG                        ║
 ║         WireGuard Administration Tool          ║
 ║                                                ║
-║          For RHEL Family VPS/Servers           ║
+║            For Linux VPS/Servers               ║
 ╚═══════════════════════════════════════════════╝
 """
 

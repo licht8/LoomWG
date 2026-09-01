@@ -322,3 +322,24 @@ class TestWireGuardInstaller:
 
         assert result.success is True
         assert installer.package_manager.calls == [(True, 2)]
+
+    def test_package_manager_uses_apt_for_debian_family(self):
+        """Debian and Ubuntu should use apt-get for package installs instead of dnf."""
+
+        class DummyResult:
+            def __init__(self, stdout="", stderr="", success=True):
+                self.stdout = stdout
+                self.stderr = stderr
+                self.success = success
+
+        class DummyRunner:
+            def run(self, command, timeout=300):
+                if command == ["bash", "-lc", "command -v apt-get >/dev/null 2>&1"]:
+                    return DummyResult(success=True)
+                if command == ["bash", "-lc", ". /etc/os-release 2>/dev/null; printf '%s' \"${ID:-}\"; printf '\n'; printf '%s' \"${ID_LIKE:-}\""]:
+                    return DummyResult(stdout="ubuntu\n", success=True)
+                return DummyResult(success=True)
+
+        pm = PackageManager(runner=DummyRunner())
+        assert pm._is_apt_family() is True
+        assert pm._install_command(["wireguard", "qrencode"]) == ["apt-get", "install", "-y", "wireguard", "qrencode"]
