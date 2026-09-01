@@ -44,39 +44,6 @@ The project script will bootstrap the environment as needed and can be used as t
 ./run.sh
 ```
 
-## Project Structure
-
-```
-loom/
-├── system/              # OS operations and detection
-│   ├── command.py      # Command execution wrapper
-│   ├── info.py         # System detection
-│   ├── packages.py     # Package management (dnf)
-│   ├── services.py     # systemd service management
-│   └── network.py      # Network configuration
-├── wireguard/          # WireGuard management
-│   ├── installer.py    # Installation automation
-│   ├── manager.py      # Interface/service control
-│   ├── server_config.py    # Server configuration
-│   ├── config_generator.py # Config file generation
-│   ├── key_manager.py  # Key generation/management
-│   ├── peer_manager.py # Peer CRUD operations
-│   ├── ip_allocator.py # IP address allocation
-│   └── status.py       # Status parsing
-├── firewall/           # firewalld integration
-│   └── firewalld.py    # Firewall rules management
-├── diagnostics/        # System diagnostics
-│   ├── system.py       # System checks
-│   ├── network.py      # Network checks
-│   ├── wireguard.py    # WireGuard checks
-│   └── firewall.py     # Firewall checks
-├── backup/             # Backup/restore functionality
-│   └── manager.py      # Backup management
-├── logging_system/     # Logging subsystem
-│   └── logger.py       # Event logging
-└── cli.py              # Interactive CLI interface
-```
-
 ## Configuration
 
 ### Server Configuration
