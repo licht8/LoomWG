@@ -32,6 +32,43 @@ cd LoomWG
 chmod +x ./run.sh
 ```
 
+### CentOS Stream 9 installation
+
+LoomWG requires Python 3.12 or newer. On CentOS Stream 9, the system Python remains Python 3.9 and must not be replaced.
+
+Install the supported Python runtime for the project:
+
+```bash
+sudo dnf install -y python3.12 python3.12-pip python3.12-devel
+```
+
+Create a dedicated virtual environment using the built-in venv module:
+
+```bash
+cd /root/loomwg
+python3.12 -m venv .venv
+source .venv/bin/activate
+```
+
+Verify that the project environment is using Python 3.12:
+
+```bash
+python --version
+```
+
+Expected output:
+
+```bash
+Python 3.12.x
+```
+
+Install LoomWG into the virtual environment:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -e .
+```
+
 ### Usage
 
 The recommended startup flow is the project script:

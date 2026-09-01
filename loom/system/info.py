@@ -72,14 +72,17 @@ class SystemDetector:
         """Run basic LoomWG system checks."""
 
         info = self.detect()
+        supported_os_ids = {"rocky", "almalinux", "centos", "rhel", "fedora"}
+        memory = self.get_memory_resources()
+        disk_free = shutil.disk_usage("/").free
 
         return [
             SystemCheck(
                 name="Operating system",
-                passed=info.os_id == "rocky",
+                passed=info.os_id.lower() in supported_os_ids,
                 message=(
                     f"{info.os_name}"
-                    if info.os_id == "rocky"
+                    if info.os_id.lower() in supported_os_ids
                     else f"Unsupported OS: {info.os_name}"
                 ),
             ),
@@ -106,6 +109,21 @@ class SystemDetector:
                 name="Package manager",
                 passed=info.package_manager == "dnf",
                 message=info.package_manager,
+            ),
+            SystemCheck(
+                name="RAM",
+                passed=True,
+                message=f"{self._format_gib(memory['total_kb']):.1f} GB",
+            ),
+            SystemCheck(
+                name="Swap",
+                passed=True,
+                message=f"{self._format_gib(memory['swap_total_kb']):.1f} GB",
+            ),
+            SystemCheck(
+                name="Disk space",
+                passed=True,
+                message=f"{self._format_gib(disk_free / 1024 / 1024):.1f} GB free",
             ),
             SystemCheck(
                 name="firewalld",
@@ -211,6 +229,49 @@ class SystemDetector:
 
         except (OSError, subprocess.SubprocessError):
             return False
+
+    @staticmethod
+    def get_memory_resources() -> dict[str, int]:
+        """Read Linux memory and swap usage from /proc/meminfo."""
+
+        result: dict[str, int] = {
+            "total_kb": 0,
+            "available_kb": 0,
+            "swap_total_kb": 0,
+            "swap_free_kb": 0,
+        }
+        meminfo_path = Path("/proc/meminfo")
+        if not meminfo_path.exists():
+            return result
+
+        for line in meminfo_path.read_text(encoding="utf-8").splitlines():
+            if ":" not in line:
+                continue
+            key, value = line.split(":", 1)
+            value = value.strip()
+            if not value:
+                continue
+            numeric = value.split()[0]
+            try:
+                amount = int(numeric)
+            except ValueError:
+                continue
+
+            if key == "MemTotal":
+                result["total_kb"] = amount
+            elif key == "MemAvailable":
+                result["available_kb"] = amount
+            elif key == "SwapTotal":
+                result["swap_total_kb"] = amount
+            elif key == "SwapFree":
+                result["swap_free_kb"] = amount
+
+        return result
+
+    @staticmethod
+    def _format_gib(value_kib: float | int) -> float:
+        """Convert KiB to GiB."""
+        return float(value_kib) / 1024.0 / 1024.0
 
     @staticmethod
     def _get_public_ip() -> str | None:

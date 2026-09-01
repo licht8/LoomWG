@@ -309,7 +309,7 @@ def show_banner() -> None:
 ║                  LoomWG                        ║
 ║         WireGuard Administration Tool          ║
 ║                                                ║
-║        For Rocky Linux VPS/Servers             ║
+║          For RHEL Family VPS/Servers           ║
 ╚═══════════════════════════════════════════════╝
 """
 
@@ -1060,6 +1060,9 @@ def install_wireguard() -> None:
 
     if not result.success:
         console.print(f"[red]✗ {result.message}[/red]")
+        if result.details:
+            console.print("[yellow]Debug output:[/yellow]")
+            print(result.details)
         LoomLogger().log_installation(False, result.message)
         pause()
         return

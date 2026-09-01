@@ -13,6 +13,7 @@ class InstallResult:
 
     success: bool
     message: str
+    details: str = ""
 
 
 class WireGuardInstaller:
@@ -64,7 +65,7 @@ class WireGuardInstaller:
 
         failed_checks = [
             check for check in checks
-            if not check.passed
+            if not check.passed and check.name not in {"firewalld"}
         ]
 
         if failed_checks:
@@ -79,12 +80,50 @@ class WireGuardInstaller:
                     "System requirements are not satisfied:\n"
                     f"{messages}"
                 ),
+                details=messages,
             )
 
+        self._warn_on_low_resources()
+        should_recommend_swap = (
+            hasattr(self.package_manager, "_should_recommend_swap")
+            and self.package_manager._should_recommend_swap()
+        )
+        if should_recommend_swap and hasattr(self.package_manager, "_has_usable_swap"):
+            if not self.package_manager._has_usable_swap():
+                if not hasattr(self.package_manager, "_maybe_create_swap") or not self.package_manager._maybe_create_swap(interactive=True):
+                    return InstallResult(
+                        success=False,
+                        message="Low-memory environment detected. Swap creation was declined or failed, so package installation cannot continue safely.",
+                        details=(
+                            "RAM is low and no swap is active. LoomWG can create a temporary 2 GB swap file "
+                            "to continue installation safely."
+                        ),
+                    )
+
         if not self._install_packages():
+            debug = self.package_manager.last_debug or "No package manager diagnostics were captured."
+            details = debug
+            if "SIGKILL" in debug or "-9" in debug or self.package_manager._kernel_reported_oom():
+                resources = self.package_manager.get_system_resources()
+                ram_total = self.package_manager._format_gib(resources["ram_total_kb"])
+                ram_available = self.package_manager._format_gib(resources["ram_available_kb"])
+                swap_total = self.package_manager._format_gib(resources["swap_total_kb"])
+                disk_free = self.package_manager._format_gib(resources["disk_free_bytes"] / 1024 / 1024)
+                details = (
+                    "Package installation was killed by the operating system.\n"
+                    "Reason: Linux OOM killer detected.\n\n"
+                    f"Memory:\n"
+                    f"  RAM: {ram_total:.1f} GB\n"
+                    f"  Available: {ram_available:.1f} GB\n"
+                    f"  Swap: {swap_total:.1f} GB\n"
+                    f"  Disk free: {disk_free:.1f} GB\n\n"
+                    "Recommended action: Create swap space and retry the installation.\n\n"
+                    f"{debug}"
+                )
             return InstallResult(
                 success=False,
                 message="Failed to install required packages.",
+                details=details,
             )
 
         if not self._install_rocky_kernel_module():
@@ -112,6 +151,28 @@ class WireGuardInstaller:
             success=True,
             message="WireGuard packages installed successfully.",
         )
+
+    def _warn_on_low_resources(self) -> None:
+        """Display a human-readable memory warning before package installation."""
+        if not hasattr(self.package_manager, "get_system_resources"):
+            return
+        if not hasattr(self.package_manager, "_should_recommend_swap"):
+            return
+
+        resources = self.package_manager.get_system_resources()
+        ram_total = self.package_manager._format_gib(resources["ram_total_kb"])
+        ram_available = self.package_manager._format_gib(resources["ram_available_kb"])
+        swap_total = self.package_manager._format_gib(resources["swap_total_kb"])
+        if self.package_manager._should_recommend_swap():
+            print("\nLow-memory environment detected.")
+            print(f"RAM: {ram_total:.1f} GB")
+            print(f"Available RAM: {ram_available:.1f} GB")
+            print(f"Swap: {swap_total:.1f} GB")
+            print(f"Recommended swap size: {self.package_manager.DEFAULT_SWAP_GB} GB")
+            if self.package_manager._has_usable_swap():
+                print("Swap is already available; continuing with installation.")
+            else:
+                print("Attempting to create temporary swap before continuing.")
 
     def _install_packages(self) -> bool:
         """Install required system packages."""
