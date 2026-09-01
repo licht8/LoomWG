@@ -38,61 +38,6 @@ The project script will bootstrap the environment as needed and can be used as t
 ./run.sh
 ```
 
-### Supported RHEL-family install flow
-
-LoomWG requires Python 3.12 or newer. The system Python may remain 3.9/3.8 on CentOS/Alma/Rocky, so the project uses a dedicated virtual environment rather than replacing the system interpreter.
-
-Install the supported Python runtime for the project:
-
-```bash
-sudo dnf install -y python3.12 python3.12-pip python3.12-devel
-```
-
-Create a dedicated virtual environment:
-
-```bash
-cd /root/loomwg
-python3.12 -m venv .venv
-source .venv/bin/activate
-```
-
-Verify the environment is using Python 3.12:
-
-```bash
-python --version
-```
-
-Expected output:
-
-```bash
-Python 3.12.x
-```
-
-Install LoomWG into the virtual environment:
-
-```bash
-python -m pip install --upgrade pip
-python -m pip install -e .
-```
-
-Then start the app:
-
-```bash
-./run.sh
-```
-
-### CentOS Stream
-
-For CentOS Stream 9 or 10, the installer handles the required package bootstrap automatically. If the DNF metadata is stale or broken, LoomWG will repair the CentOS repository configuration during installation setup.
-
-### Rocky Linux
-
-Rocky Linux 9 and 10 are supported directly. The project uses the same Python 3.12 virtualenv flow and RHEL-family package setup.
-
-### AlmaLinux
-
-AlmaLinux 9 and 10 are supported directly, including the same Python 3.12 virtual environment and package installation flow.
-
 ### Usage
 
 ```bash
