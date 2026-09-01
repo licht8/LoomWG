@@ -38,12 +38,6 @@ The project script will bootstrap the environment as needed and can be used as t
 ./run.sh
 ```
 
-### Usage
-
-```bash
-./run.sh
-```
-
 ## Project Structure
 
 ```
