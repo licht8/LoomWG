@@ -1,5 +1,9 @@
 # LoomWG
 
+<p align="center">
+  <img src="assets/loomwg-logo.png" alt="LoomWG logo" width="260" />
+</p>
+
 LoomWG is a professional Python-based CLI application for installing, configuring, managing, monitoring, and troubleshooting WireGuard VPN servers on CentOS, Rocky Linux, AlmaLinux, and other RHEL-family Linux distributions.
 
 ## Features
