@@ -1,12 +1,12 @@
 # LoomWG
 
-LoomWG is a professional Python-based CLI application for installing, configuring, managing, monitoring, and troubleshooting WireGuard VPN servers on Rocky Linux.
+LoomWG is a professional Python-based CLI application for installing, configuring, managing, monitoring, and troubleshooting WireGuard VPN servers on CentOS, Rocky Linux, AlmaLinux, and other RHEL-family Linux distributions.
 
 ## Features
 
-- **WireGuard Installation**: Automated, idempotent installation with system verification for Rocky Linux
+- **WireGuard Installation**: Automated, idempotent installation with system verification for CentOS/RHEL-family servers
 - **Server Configuration**: Interactive setup with validation and sensible defaults
-- **Peer Management**: Create, list, disable, enable, and remove VPN peers
+- **Peer Management**: Create, list, disable, enable, revoke, rotate keys, and remove VPN peers
 - **IP Allocation**: Automatic private IP assignment with conflict prevention
 - **Firewall Integration**: Automatic firewalld configuration with port management
 - **Network Configuration**: IPv4/IPv6 forwarding setup and verification
@@ -17,12 +17,12 @@ LoomWG is a professional Python-based CLI application for installing, configurin
 
 ## Requirements
 
-- **OS**: Rocky Linux 9 or 10 (x86_64)
+- **OS**: CentOS Stream 8/9/10, Rocky Linux 8/9/10, AlmaLinux 8/9/10, or other RHEL-family Linux distributions
 - **Root privileges**: Required for all operations
 - **Python**: 3.12+
 - **systemd**: For service management
 - **firewalld**: For firewall management
-- **WireGuard kernel module**: Included in Rocky Linux
+- **WireGuard kernel module**: Provided by the OS package set or ELRepo on supported distributions
 
 ## Installation
 
@@ -32,9 +32,15 @@ cd LoomWG
 chmod +x ./run.sh
 ```
 
-### CentOS Stream 9 installation
+The project script will bootstrap the environment as needed and can be used as the recommended startup flow:
 
-LoomWG requires Python 3.12 or newer. On CentOS Stream 9, the system Python remains Python 3.9 and must not be replaced.
+```bash
+./run.sh
+```
+
+### Supported RHEL-family install flow
+
+LoomWG requires Python 3.12 or newer. The system Python may remain 3.9/3.8 on CentOS/Alma/Rocky, so the project uses a dedicated virtual environment rather than replacing the system interpreter.
 
 Install the supported Python runtime for the project:
 
@@ -42,7 +48,7 @@ Install the supported Python runtime for the project:
 sudo dnf install -y python3.12 python3.12-pip python3.12-devel
 ```
 
-Create a dedicated virtual environment using the built-in venv module:
+Create a dedicated virtual environment:
 
 ```bash
 cd /root/loomwg
@@ -50,7 +56,7 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 ```
 
-Verify that the project environment is using Python 3.12:
+Verify the environment is using Python 3.12:
 
 ```bash
 python --version
@@ -69,9 +75,25 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 ```
 
-### Usage
+Then start the app:
 
-The recommended startup flow is the project script:
+```bash
+./run.sh
+```
+
+### CentOS Stream
+
+For CentOS Stream 9 or 10, the installer handles the required package bootstrap automatically. If the DNF metadata is stale or broken, LoomWG will repair the CentOS repository configuration during installation setup.
+
+### Rocky Linux
+
+Rocky Linux 9 and 10 are supported directly. The project uses the same Python 3.12 virtualenv flow and RHEL-family package setup.
+
+### AlmaLinux
+
+AlmaLinux 9 and 10 are supported directly, including the same Python 3.12 virtual environment and package installation flow.
+
+### Usage
 
 ```bash
 ./run.sh
