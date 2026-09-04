@@ -9,15 +9,9 @@ from ..wireguard.peer_manager import PeerManager
 from ..wireguard.client_config import ClientConfigStore
 from ..wireguard.config_generator import ConfigGenerator
 from ..wireguard.interfaces import config_path as interface_config_path
-from ..cli.common import selected_interface
-from ..cli.common import clear_screen, section_banner, pause, confirm
-
-from datetime import datetime
-from pathlib import Path
-
-from ..wireguard.peer_manager import PeerManager
-from ..wireguard.client_config import ClientConfigStore
-from ..cli.common import clear_screen, section_banner, pause, confirm
+from ..wireguard.manager import WireGuardManager
+from ..cli.common import selected_interface, clear_screen, section_banner, pause, confirm
+from ..views.peer_views import show_peer_selection
 
 def enforce_expired_peers() -> None:
     """Revoke expired peers from persistent config and the running interface."""

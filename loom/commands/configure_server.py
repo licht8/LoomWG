@@ -18,6 +18,7 @@ from ..wireguard.config_generator import ConfigGenerator
 from ..wireguard.interfaces import config_path as interface_config_path
 
 from ..cli.common import selected_interface, clear_screen, section_banner, pause, confirm
+from ..commands.install_wireguard import install_wireguard
 
 def configure_server() -> None:
     """Configure WireGuard server."""

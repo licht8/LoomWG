@@ -11,14 +11,6 @@ from ..system.services import ServiceManager
 from ..logging_system.logger import LoomLogger
 from ..cli.common import clear_screen, section_banner, pause, confirm
 
-from pathlib import Path
-import shutil
-
-from ..backup.manager import BackupManager
-from ..wireguard.manager import WireGuardManager
-from ..system.services import ServiceManager
-from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, section_banner, pause, confirm
 
 def create_backup() -> None:
     """Create a backup."""

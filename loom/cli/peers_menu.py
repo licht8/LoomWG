@@ -2,7 +2,7 @@
 from rich.console import Console
 console = Console()
 
-from ..views.peer_views import list_peers, peer_table, show_peer_selection
+from ..views.peer_views import list_peers, peer_table, show_peer_selection, show_peer
 from ..views.qr_display import show_qr_code
 from ..commands.peer_crud import create_peer
 from ..commands.peer_lifecycle import disable_peer, enable_peer, revoke_peer, rotate_peer_keys, remove_peer

@@ -11,6 +11,8 @@ from ..wireguard.server_config import ServerConfig
 from ..wireguard.interfaces import config_path as interface_config_path
 
 from ..wireguard.manager import WireGuardManager
+from ..system.info import SystemDetector
+from ..wireguard.peer_manager import Peer
 from ..cli.common import selected_interface, clear_screen, section_banner, pause, confirm
 
 def import_server_peers() -> None:

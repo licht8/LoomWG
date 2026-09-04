@@ -4,6 +4,7 @@ from ..system.services import ServiceManager
 from ..logging_system.logger import LoomLogger
 from ..system.packages import PackageManager
 from ..cli.common import clear_screen, section_banner, pause, confirm
+from ..commands.install_wireguard import install_wireguard
 
 from rich.console import Console
 

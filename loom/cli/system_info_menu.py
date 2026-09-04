@@ -11,12 +11,12 @@ from ..wireguard.peer_manager import PeerManager
 from ..firewall.firewalld import FirewalldManager
 from ..system.network import NetworkManager
 from ..system.services import ServiceManager
+from ..views.server_status import _wg_runtime_dashboard
 
 import subprocess
 from pathlib import Path
 
 from ..system.info import SystemDetector
-from ..wireguard.manager import WireGuardManager
 from ..cli.common import clear_screen, section_banner, pause
 
 def system_info_menu() -> None:

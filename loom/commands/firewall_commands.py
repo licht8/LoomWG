@@ -11,14 +11,6 @@ from ..cli.common import selected_interface
 from ..logging_system.logger import LoomLogger
 from ..cli.common import clear_screen, section_banner, pause
 
-import subprocess
-
-from ..firewall.firewalld import FirewalldManager
-from ..wireguard.server_config import ServerConfig
-from ..wireguard.interfaces import config_path
-
-from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, section_banner, pause
 
 def start_firewall() -> None:
     """Start firewall."""

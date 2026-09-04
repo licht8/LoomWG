@@ -67,7 +67,10 @@ def install_wireguard() -> None:
         pause()
         return
 
-    console.print(f"[green]✓ {result.message}[/green]")
+    console.print(f"[green]✓ {result.message}[/green]\n")
+
+    # Lazy import to break circular dependency with configure_server
+    from ..commands.configure_server import prompt_server_config, validate_server_settings
 
     try:
         console.print("\n[bold]Creating server configuration...[/bold]")
@@ -170,7 +173,3 @@ def install_wireguard() -> None:
         LoomLogger().log_installation(False, str(exc))
 
     pause()
-
-
-
-
