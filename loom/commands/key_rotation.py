@@ -11,8 +11,6 @@ from ..wireguard.client_config import ClientConfigStore
 from ..wireguard.peer_manager import PeerManager
 from ..wireguard.interfaces import config_path as interface_config_path
 
-import re
-
 from ..backup.manager import BackupManager
 from ..commands.configure_server import normalize_wireguard_config
 from ..commands.configure_server import repair_wireguard_config_file
