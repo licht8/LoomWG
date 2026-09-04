@@ -4,6 +4,8 @@ from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
+from rich.rule import Rule
+from rich.text import Text
 
 from ..logging_system.logger import LoomLogger
 from ..cli.common import clear_screen, section_banner, pause, confirm
@@ -46,7 +48,7 @@ def show_firewall_status() -> None:
 
 
 def view_logs() -> None:
-    """View recent logs."""
+    """View recent logs grouped by severity."""
     clear_screen()
 
     try:
@@ -58,24 +60,40 @@ def view_logs() -> None:
             pause()
             return
 
-        console.print("[bold]Recent Logs[/bold]\n")
-
+        # Group logs by level
+        by_level = {"ERROR": [], "WARNING": [], "INFO": []}
         for log in logs:
-            timestamp = log.get("timestamp", "")
-            level = log.get("level", "")
-            message = log.get("message", "")
-            category = log.get("category", "")
+            level = log.get("level", "INFO")
+            if level in by_level:
+                by_level[level].append(log)
 
-            level_color = {
-                "INFO": "green",
-                "WARNING": "yellow",
-                "ERROR": "red",
-                "CRITICAL": "red",
-            }.get(level, "white")
+        # Print each group in a styled panel
+        for level, level_logs in by_level.items():
+            if not level_logs:
+                continue
 
-            console.print(
-                f"[{level_color}][{level}][/{level_color}] {timestamp} [{category}] {message}"
+            color = {"ERROR": "red", "WARNING": "yellow", "INFO": "green"}.get(level, "white")
+            icon = {"ERROR": "[red]\u2717[/red]", "WARNING": "[yellow]\u26a0[/yellow]", "INFO": "[green]\u2713[/green]"}.get(level, "[dim]\u2022[/dim]")
+
+            panel_title = Text.assemble(
+                Text(icon), f" {level} ({len(level_logs)})",
+                style=f"bold {color}",
             )
+
+            lines = []
+            for log in level_logs[-10:]:  # Show last 10 per level
+                ts = log.get("timestamp", "")[:19]
+                msg = log.get("message", "")
+                cat = log.get("category", "")
+                lines.append(f"[dim]{ts}[/] [{cat}] {msg}")
+
+            console.print(Panel(
+                "\n".join(lines),
+                title=panel_title,
+                border_style=color,
+                padding=(0, 1),
+            ))
+            console.print()
 
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")

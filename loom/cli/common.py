@@ -4,6 +4,9 @@ import os
 
 from rich.console import Console
 from rich.panel import Panel
+from rich.rule import Rule
+from rich.text import Text
+from rich.columns import Columns
 
 from ..system.info import SystemDetector
 from ..wireguard.interfaces import get_selected_interface, set_selected_interface, configured_interfaces
@@ -179,11 +182,14 @@ def clear_screen() -> None:
 
 def section_banner(title: str, subtitle: str | None = None) -> None:
     """Display a consistent purple banner for a CLI section."""
-    text = f"[bold white]{title}[/bold white]"
+    clear_screen()
+    
+    panel_title = Text(title, style="bold cyan")
     if subtitle:
-        text += f"\n[grey70]{subtitle}[/grey70]"
-    console.print(Panel(text, border_style="purple", padding=(1, 2)))
-    console.print()
+        panel_title.append("\n")
+        panel_title.append(subtitle, style="dim")
+    
+    console.print(Panel(panel_title, border_style="blue", padding=(1, 2)))
 
 
 def pause() -> None:
@@ -226,7 +232,8 @@ def show_banner() -> None:
 ╚═══════════════════════════════════════════════╝
 """
 
-    print(banner)
+    console.print(banner)
+    console.print(Rule(style="blue"))
 
 
 
@@ -284,23 +291,31 @@ def show_header_info() -> None:
     info = detector.detect()
     wg_manager = WireGuardManager()
 
-    print("\n" + "=" * 50)
-    print(f"Server: {info.hostname}")
-    print(f"OS: {info.os_name} {info.os_version}")
-    print(f"Kernel: {info.kernel}")
+    # Build header columns
+    left = Text.assemble(
+        "Server: ", (info.hostname, "bold cyan"),
+    )
+    middle = Text.assemble(
+        "OS: ", (info.os_name.split()[0], "dim"),
+        " ", (info.os_version or "", "dim"),
+    )
+    right_parts = ["Kernel: "]
+    right_parts.append((info.kernel or "N/A", "dim"))
+    right = Text.assemble(*right_parts)
+
+    console.print(Panel(
+        Columns([left, middle, right], equal=True),
+        border_style="blue",
+        padding=(0, 1),
+    ))
 
     if wg_manager.is_installed():
         interfaces = wg_manager.get_interfaces()
-
-        if interfaces:
-            print(f"WireGuard: Installed ({len(interfaces)} interface(s))")
-
-        else:
-            print("WireGuard: Installed")
+        status = f"{len(interfaces)} interface(s)" if interfaces else "no interfaces"
+        console.print(f"  [green]WireGuard:[/green] Installed ({status})")
     else:
-        print("WireGuard: Not installed")
-
-    print("=" * 50 + "\n")
+        console.print("  [yellow]WireGuard:[/yellow] Not installed")
+    console.print()
 
 
 def menu_option(

@@ -19,6 +19,9 @@ from ..logging_system.logger import LoomLogger
 from ..cli.common import clear_screen, section_banner, pause, selected_interface, confirm
 
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
+from rich.panel import Panel
+from rich.text import Text
 
 console = Console()
 
@@ -55,14 +58,22 @@ def install_wireguard() -> None:
 
     installer = WireGuardInstaller()
 
-    console.print("\n[bold]Installing packages...[/bold]\n")
+    console.print("\n[bold cyan]Installing WireGuard...[/]\n")
     result = installer.install(interface)
 
-    if not result.success:
-        console.print(f"[red]✗ {result.message}[/red]")
+    if result.success:
+        console.print(Panel(
+            Text.assemble("✓ Installation completed: ", (result.message, "green")),
+            border_style="green",
+        ))
+        console.print(f"[green]✓ {result.message}\n[/green]")
+    else:
+        console.print(Panel(
+            Text.assemble("✗ Installation failed: ", (result.message, "red")),
+            border_style="red",
+        ))
         if result.details:
-            console.print("[yellow]Debug output:[/yellow]")
-            print(result.details)
+            console.print(f"[yellow]Debug: {result.details}[/]")
         LoomLogger().log_installation(False, result.message)
         pause()
         return

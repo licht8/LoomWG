@@ -19,6 +19,8 @@ from ..logging_system.logger import LoomLogger
 from ..cli.common import selected_interface, clear_screen, section_banner, pause, confirm
 
 from rich.console import Console
+from rich.panel import Panel
+from rich.text import Text
 
 console = Console()
 
@@ -126,16 +128,20 @@ def rotate_server_keys() -> None:
             configured_peers,
         )
 
-        console.print("\n[green]✓ Server key rotation completed[/green]")
-        console.print(f"New server public key: {new_keypair.public_key}")
-        console.print(f"Preserved peers: {configured_peers}")
-        console.print(f"Client configs regenerated: {len(regenerated)}")
+        # Build summary details
+        lines = [f"New server public key: {new_keypair.public_key}", f"Preserved peers: {configured_peers}", f"Client configs regenerated: {len(regenerated)}"]
         if regeneration_failed:
-            console.print(f"Client configs requiring manual regeneration: {len(regeneration_failed)}")
-        console.print(f"Backup location: {backup_file}")
-        console.print(f"Rotation timestamp: {datetime.now().isoformat()}")
+            lines.append(f"Manual regeneration required: {len(regeneration_failed)}")
+        lines.append(f"Backup location: {backup_file}")
+        lines.append(f"Rotation timestamp: {datetime.now().isoformat()}")
         if regen_marker:
-            console.print(f"Regeneration marker: {regen_marker}")
+            lines.append(f"Regeneration marker: {regen_marker}")
+
+        console.print(Panel(
+            "\n".join(lines),
+            title=Text("✓ Server key rotation completed", style="bold green"),
+            border_style="green",
+        ))
 
     except Exception as exc:
         config_path.write_text(normalize_wireguard_config(original_config), encoding="utf-8")

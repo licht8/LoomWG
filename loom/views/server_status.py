@@ -117,21 +117,39 @@ def _format_bytes(value: int) -> str:
 
 
 def show_server_config() -> None:
-    """Show server configuration."""
+    """Show server configuration with syntax highlighting."""
     clear_screen()
 
     interface = selected_interface()
-    config_path = interface_config_path(interface)
+    config_file = interface_config_path(interface)
 
-    if not config_path.exists():
+    if not config_file.exists():
         console.print("[yellow]No configuration found[/yellow]")
         pause()
         return
 
     try:
-        content = config_path.read_text()
-        console.print(f"\n[bold]{config_path}[/bold]\n")
-        print(content)
+        from rich.syntax import Syntax
+        from rich.text import Text
+        from rich.padding import Padding
+
+        text = config_file.read_text(encoding="utf-8")
+        title = Text.assemble(
+            "WireGuard Config: ",
+            (config_file.name, "bold cyan"),
+        )
+        console.print(Panel(
+            Syntax(
+                text,
+                "ini",
+                theme="monokai",
+                line_numbers=True,
+                word_wrap=True,
+                padding=1,
+            ),
+            title=title,
+            border_style="blue",
+        ))
     except Exception as e:
         console.print(f"[red]Error reading config: {e}[/red]")
 
