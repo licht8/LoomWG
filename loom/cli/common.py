@@ -65,7 +65,7 @@ def create_interface() -> None:
     import re
     from pathlib import Path
 
-    from ..wireguard.client_config import ConfigGenerator
+    from ..wireguard.config_generator import ConfigGenerator
     from ..wireguard.key_manager import KeyManager
     from ..wireguard.server_config import ServerConfig
     from ..wireguard.interfaces import (
@@ -334,6 +334,7 @@ def delete_interface() -> None:
     from ..wireguard.manager import WireGuardManager
     from ..system.services import ServiceManager
     from ..logging_system.logger import LoomLogger
+    from ..wireguard.interfaces import config_path as interface_config_path
 
     interface = selected_interface()
     if interface == "wg0":

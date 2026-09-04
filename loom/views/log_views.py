@@ -6,10 +6,13 @@ from rich.console import Console
 from rich.table import Table
 
 from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, section_banner, pause
+from ..cli.common import clear_screen, section_banner, pause, confirm
 from ..wireguard.manager import WireGuardManager
+from ..wireguard.server_config import ServerConfig
+from ..firewall.firewalld import FirewalldManager
 
 console = Console()
+
 
 def show_firewall_status() -> None:
     """Show firewall status."""
@@ -39,7 +42,6 @@ def show_firewall_status() -> None:
         console.print(f"[red]Error: {e}[/red]")
 
     pause()
-
 
 
 
@@ -82,7 +84,6 @@ def view_logs() -> None:
 
 
 
-
 def clear_logs() -> None:
     """Clear all logs."""
     if confirm("Clear all logs? This cannot be undone."):
@@ -92,13 +93,12 @@ def clear_logs() -> None:
             if logger.clear_logs():
                 console.print("[green]✓ Logs cleared[/green]")
             else:
-                console.print("[red]✗ Failed to clear logs[/red]")
+                console.print("[red]✗ Failed to export logs[/red]")
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
 
     pause()
-
 
 
 
@@ -124,7 +124,3 @@ def export_logs() -> None:
         console.print(f"[red]Error: {e}[/red]")
 
     pause()
-
-
-
-

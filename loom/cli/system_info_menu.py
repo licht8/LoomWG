@@ -13,6 +13,7 @@ from ..system.network import NetworkManager
 from ..system.services import ServiceManager
 from ..views.server_status import _wg_runtime_dashboard
 
+import sys
 import subprocess
 from pathlib import Path
 
