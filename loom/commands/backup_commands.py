@@ -18,7 +18,14 @@ def create_backup() -> None:
     section_banner("Create backup", "Save the current LoomWG and WireGuard state")
 
     try:
-        description = input("Backup description (optional): ").strip()
+        try:
+            description = input("Backup description (optional): ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         console.print("\n[bold]Creating backup...[/bold]")
 
@@ -60,7 +67,14 @@ def restore_backup() -> None:
         for i, (filename, created) in enumerate(backups, 1):
             print(f"  {i}) {filename} ({created.strftime('%Y-%m-%d %H:%M:%S')})")
 
-        choice = input("\nSelect backup (number): ").strip()
+        try:
+            choice = input("\nSelect backup (number): ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         try:
             idx = int(choice) - 1
@@ -114,7 +128,14 @@ def delete_backup() -> None:
         for i, (filename, created) in enumerate(backups, 1):
             print(f"  {i}) {filename} ({created.strftime('%Y-%m-%d %H:%M:%S')})")
 
-        choice = input("\nSelect backup to delete (number): ").strip()
+        try:
+            choice = input("\nSelect backup to delete (number): ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         try:
             idx = int(choice) - 1

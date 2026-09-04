@@ -38,7 +38,14 @@ def download_peer_config() -> None:
     clear_screen()
     peer_mgr = PeerManager()
     show_peer_selection(peer_mgr)
-    name = input("Peer name: ").strip()
+    try:
+        name = input("Peer name: ").strip()
+
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        pause()
+        return
+
     path = ClientConfigStore().base_dir / f"{name}.conf"
     if not peer_mgr.get_peer(name):
         console.print("[red]Peer not found[/red]")
@@ -60,12 +67,26 @@ def set_peer_expiry() -> None:
     section_banner("Set peer expiry", f"Manage client access expiry on {selected_interface()}")
     peer_mgr = PeerManager()
     show_peer_selection(peer_mgr)
-    name = input("Peer name: ").strip()
+    try:
+        name = input("Peer name: ").strip()
+
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        pause()
+        return
+
     peer = peer_mgr.get_peer(name)
     if not peer:
         console.print("[red]Peer not found[/red]")
     else:
-        raw = input("Expiry (YYYY-MM-DD, blank to clear): ").strip()
+        try:
+            raw = input("Expiry (YYYY-MM-DD, blank to clear): ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
         try:
             expiry = datetime.fromisoformat(raw).replace(hour=23, minute=59, second=59).isoformat() if raw else None
             peer_mgr.set_expiry(name, expiry)

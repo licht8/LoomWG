@@ -37,7 +37,13 @@ def main_menu() -> None:
         print()
         print("  0) Exit\n")
 
-        choice = input("Select option: ").strip()
+        try:
+            choice = input("Select option: ").strip()
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         if choice == "1":
             server_menu()

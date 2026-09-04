@@ -154,5 +154,6 @@ class ServiceManager:
             )
 
             return result.stdout if result.returncode == 0 else None
-        except Exception:
-            return None
+        except Exception as exc:
+                    logger.error("Service status query failed: %s", exc)
+                    return None

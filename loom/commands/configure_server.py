@@ -206,7 +206,14 @@ def prompt_server_config() -> ServerConfig:
     console.print("[dim]Press Enter to accept the value in brackets.[/dim]")
 
     def value(label: str, default: str) -> str:
-        return input(f"{label} [{default}]: ").strip() or default
+        try:
+            value = input(f"{label} [{default}]: ").strip()
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return None
+        return value or default
+
 
     port_text = value("Listening UDP port", str(defaults.listen_port))
     try:

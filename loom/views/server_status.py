@@ -52,7 +52,12 @@ def show_server_status() -> None:
                 console.print(table)
         else:
             console.print("Uptime:             N/A")
-        choice = input("\n[R]efresh or Enter to go back: ").strip().lower()
+        try:
+            choice = input("\n[R]efresh or Enter to go back: ").strip().lower()
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            return
+
         if choice != "r":
             return
 

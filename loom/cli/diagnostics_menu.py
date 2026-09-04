@@ -33,7 +33,13 @@ def diagnostics_menu() -> None:
         print()
         print("  0) Back\n")
 
-        choice = input("Select option: ").strip()
+        try:
+            choice = input("Select option: ").strip()
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         if choice == "1":
             run_full_diagnostics()

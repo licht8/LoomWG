@@ -30,7 +30,14 @@ def disable_peer() -> None:
         peer_mgr = PeerManager()
         show_peer_selection(peer_mgr)
 
-        name = input("Peer name: ").strip()
+        try:
+            name = input("Peer name: ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         if not name:
             return
@@ -66,7 +73,14 @@ def enable_peer() -> None:
         peer_mgr = PeerManager()
         show_peer_selection(peer_mgr)
 
-        name = input("Peer name: ").strip()
+        try:
+            name = input("Peer name: ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         if not name:
             return
@@ -115,7 +129,14 @@ def revoke_peer() -> None:
     try:
         peer_mgr = PeerManager()
         show_peer_selection(peer_mgr)
-        name = input("Peer name: ").strip()
+        try:
+            name = input("Peer name: ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
         peer = peer_mgr.get_peer(name)
         if not peer:
             console.print("[red]Peer not found[/red]")
@@ -174,7 +195,14 @@ def rotate_peer_keys() -> None:
     try:
         peer_mgr = PeerManager()
         show_peer_selection(peer_mgr)
-        name = input("Peer name: ").strip()
+        try:
+            name = input("Peer name: ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
         peer = peer_mgr.get_peer(name)
         if not peer:
             console.print("[red]Peer not found[/red]")
@@ -293,7 +321,14 @@ def remove_peer() -> None:
         peer_mgr = PeerManager()
         show_peer_selection(peer_mgr)
 
-        name = input("Peer name: ").strip()
+        try:
+            name = input("Peer name: ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         if not name:
             return

@@ -41,7 +41,12 @@ def select_interface() -> None:
     console.print(f"{len(interfaces) + 1}. Create Interface")
     console.print(f"{len(interfaces) + 2}. Back")
 
-    choice = input("Select interface: ").strip()
+    try:
+        choice = input("Select interface: ").strip()
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        return
+
     try:
         index = int(choice)
     except ValueError:
@@ -74,7 +79,13 @@ def create_interface() -> None:
         config_path as interface_config_path,
     )
 
-    name = input("Interface name: ").strip()
+    try:
+        name = input("Interface name: ").strip()
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        pause()
+        return
+
     if not validate_interface_name(name) or name == "wg0":
         console.print("[red]Invalid or duplicate interface name.[/red]")
         pause()
@@ -95,9 +106,26 @@ def create_interface() -> None:
             defaults.ipv4_network = f"10.{subnet_octet}.{subnet_octet}.0/24"
             defaults.ipv6_network = f"fd42:{subnet_octet:x}:{subnet_octet:x}::/64"
     console.print("[dim]Press Enter to accept the value in brackets.[/dim]")
-    port_text = input(f"Listening UDP port [{defaults.listen_port}]: ").strip()
-    ipv4 = input(f"VPN IPv4 network [{defaults.ipv4_network}]: ").strip() or defaults.ipv4_network
-    ipv6 = input(f"VPN IPv6 network [{defaults.ipv6_network}]: ").strip() or defaults.ipv6_network
+    try:
+        port_text = input(f"Listening UDP port [{defaults.listen_port}]: ").strip()
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        pause()
+        return None
+    try:
+        ipv4_input = input(f"VPN IPv4 network [{defaults.ipv4_network}]: ").strip()
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        pause()
+        return None
+    ipv4 = ipv4_input or defaults.ipv4_network
+    try:
+        ipv6_input = input(f"VPN IPv6 network [{defaults.ipv6_network}]: ").strip()
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        pause()
+        return None
+    ipv6 = ipv6_input or defaults.ipv6_network
     try:
         port = int(port_text) if port_text else defaults.listen_port
         candidate = ServerConfig(
@@ -160,7 +188,11 @@ def section_banner(title: str, subtitle: str | None = None) -> None:
 
 def pause() -> None:
     """Pause and wait for user input."""
-    input("\nPress Enter to continue...")
+    try:
+        input("\nPress Enter to continue...")
+    except (EOFError, KeyboardInterrupt, OSError):
+        pass
+
 
 
 def confirm(prompt: str = "Continue?") -> bool:
@@ -216,7 +248,12 @@ def prompt_for_qr_code(peer_name: str | None = None) -> bool:
     """Prompt the user to show a QR code for a generated client config."""
     prompt = "Show QR code for this peer? (Y/n): "
     while True:
-        response = input(prompt).strip().lower()
+        try:
+            response = input(prompt).strip().lower()
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            return False
+
         if response in ("", "y", "yes"):
             return True
         if response in ("n", "no"):
@@ -303,7 +340,12 @@ def manage_interfaces() -> None:
         console.print()
         console.print("  [purple]0.[/purple] Back")
 
-        choice = input("Select option: ").strip()
+        try:
+            choice = input("Select option: ").strip()
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            return
+
 
         if choice.lower() == "ci":
             create_interface()
@@ -350,7 +392,13 @@ def delete_interface() -> None:
     console.print(f"[bold red]Delete Interface {interface}[/bold red]")
     console.print(f"Configuration: {path}")
     console.print("This removes the interface configuration, peer database, and client configs.")
-    if input(f"Type DELETE {interface} to continue: ").strip() != f"DELETE {interface}":
+    try:
+        confirmation = input(f"Type DELETE {interface} to continue: ").strip()
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        pause()
+        return
+    if confirmation != f"DELETE {interface}":
         console.print("[yellow]Interface deletion cancelled.[/yellow]")
         pause()
         return

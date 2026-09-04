@@ -107,7 +107,14 @@ def export_logs() -> None:
     clear_screen()
 
     try:
-        filename = input("Export filename (default: loomwg_logs.json): ").strip()
+        try:
+            filename = input("Export filename (default: loomwg_logs.json): ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         if not filename:
             filename = "loomwg_logs.json"

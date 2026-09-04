@@ -30,7 +30,14 @@ def create_peer() -> None:
         peer_mgr = PeerManager()
 
         # Get peer name
-        name = input("Peer name: ").strip()
+        try:
+            name = input("Peer name: ").strip()
+
+        except (EOFError, KeyboardInterrupt, OSError):
+            console.print("[red]Input interrupted.[/red]")
+            pause()
+            return
+
 
         if not name:
             console.print("[red]Name cannot be empty[/red]")

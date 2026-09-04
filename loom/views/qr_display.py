@@ -17,7 +17,14 @@ def show_qr_code() -> None:
 
     peer_mgr = PeerManager()
     show_peer_selection(peer_mgr)
-    name = input("Peer name: ").strip()
+    try:
+        name = input("Peer name: ").strip()
+
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        pause()
+        return
+
     if not name:
         return
     peer = peer_mgr.get_peer(name)

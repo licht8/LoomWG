@@ -49,7 +49,14 @@ def rotate_server_keys() -> None:
     console.print(f"Configuration file: {config_path}")
     console.print()
     console.print("[bold red]WARNING:[/bold red] Rotating the server key changes the server public key and makes existing client configurations outdated.")
-    confirmation = input("Type ROTATE to continue: ").strip()
+    try:
+        confirmation = input("Type ROTATE to continue: ").strip()
+
+    except (EOFError, KeyboardInterrupt, OSError):
+        console.print("[red]Input interrupted.[/red]")
+        pause()
+        return
+
     if confirmation != "ROTATE":
         console.print("[yellow]Server key rotation cancelled.[/yellow]")
         pause()

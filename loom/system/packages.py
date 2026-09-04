@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import os
 import re
 import shutil
@@ -307,7 +309,12 @@ class PackageManager:
                 f"Creating a {size_gb} GB swap file is recommended for package installation.\n"
                 "Create swap? (y/n): "
             )
-            response = input(prompt).strip().lower()
+            try:
+                response = input(prompt).strip().lower()
+            except (EOFError, KeyboardInterrupt, OSError):
+                logger.error("Input interrupted")
+                pause()
+                return False
             if response not in {"", "y", "yes"}:
                 return False
 
