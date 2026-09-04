@@ -1,126 +1,126 @@
-# План: Декомпозиция `loom/cli.py`
+# Plan: Decomposition of `loom/cli.py`
 
-## Этап 1: Подготовка общей базы (`common.py`)
+## Phase 1: Preparing the Common Base (`common.py`)
 
-**Цель:** Вынести общие UI-утилиты в отдельный модуль. Это самое безопасное изменение — никаких зависимостей от других новых модулей.
+**Goal:** Extract common UI utilities into a separate module. This is the safest change — no dependencies on other new modules.
 
-### Шаги:
+### Steps:
 
-1. **Создать `loom/cli/common.py`**
-   - Вынести функции:
+1. **Create `loom/cli/common.py`**
+   - Extract functions:
      - `clear_screen()`
      - `pause()`
      - `confirm(prompt)`
      - `section_banner(title, subtitle)`
      - `menu_option(number, title, description, command)`
      - `show_banner()`
-   - Экспортировать все через `__all__`.
+   - Export all via `__all__`.
 
-2. **Обновить `loom/cli/__init__.py`**
-   - Добавить импорт из `common`: `from .common import *`.
+2. **Update `loom/cli/__init__.py`**
+   - Add import from `common`: `from .common import *`.
 
-3. **Обновить `loom/cli.py`**
-   - Заменить локальные вызовы на импорт из `loom.cli.common`.
-   - Удалить функции, перенесённые в `common.py`.
-   - Проверить, что `cli.py` всё ещё работает: запустить `python -c "from loom.cli import main_menu"` (без вызова main).
+3. **Update `loom/cli.py`**
+   - Replace local calls with import from `loom.cli.common`.
+   - Remove functions moved to `common.py`.
+   - Verify `cli.py` still works: run `python -c "from loom.cli import main_menu"` (without calling main).
 
-**Критерий готовности:** `pytest` проходит. `cli.py` стал короче на ~80 строк.
-
----
-
-## Этап 2: Вынос View-функций (`loom/views/`)
-
-**Цель:** Отделить функции отрисовки от логики. Функции, которые только показывают данные, переезжают в `loom/views/`.
-
-### Шаги:
-
-1. **Создать `loom/views/__init__.py`**
-
-2. **Создать `loom/views/server_status.py`**
-   - Вынести: `show_server_status()`, `_wg_runtime_dashboard()`, `_age_text()`, `_format_bytes()`.
-   - Зависимости: `subprocess`, `datetime`, `loom.wireguard.*`. Оставить как есть.
-
-3. **Создать `loom/views/peer_views.py`**
-   - Вынести: `list_peers()`, `peer_table()`, `show_peer()`, `show_peer_selection()`.
-   - Зависимости: `loom.wireguard.peer_manager.Peer`, `loom.cli.common`.
-
-4. **Создать `loom/views/qr_display.py`**
-   - Вынести: `prompt_for_qr_code()`, `display_peer_qr_code()`, `show_qr_code()`.
-   - Зависимости: `loom.wireguard.client_config`, `loom.views.peer_views`.
-
-5. **Создать `loom/views/backup_views.py`**
-   - Вынести: `list_backups()`, `create_backup()`, `restore_backup()`, `delete_backup()`.
-   - Зависимости: `loom.backup.manager`, `loom.cli.common`.
-
-6. **Создать `loom/views/log_views.py`**
-   - Вынести: `view_logs()`, `clear_logs()`, `export_logs()`.
-   - Зависимости: `loom.logging_system.logger`, `loom.cli.common`.
-
-7. **Обновить `loom/cli.py`**
-   - Заменить вызовы View-функций на импорт из `loom.views`.
-   - Удалить вынесенный код.
-
-**Критерий готовности:** `pytest` проходит. `cli.py` стал короче на ~400 строк.
+**Completion Criteria:** `pytest` passes. `cli.py` is shorter by ~80 lines.
 
 ---
 
-## Этап 3: Вынос бизнес-логики (`loom/commands/`)
+## Phase 2: Extracting View Functions (`loom/views/`)
 
-**Цель:** Отделить действия, которые что-то меняют, от UI. Функции, которые пишут файлы и вызывают `subprocess.run`, переезжают в `loom/commands/`.
+**Goal:** Separate rendering functions from logic. Functions that only display data move to `loom/views/`.
 
-### Шаги:
+### Steps:
 
-1. **Создать `loom/commands/__init__.py`**
+1. **Create `loom/views/__init__.py`**
 
-2. **Создать `loom/commands/configure_server.py`**
-   - Вынести: `configure_server()`, `prompt_server_config()`, `validate_server_settings()`.
-   - Аргументы: интерфейс, конфиг-файл. Возврат: результат или исключения.
+2. **Create `loom/views/server_status.py`**
+   - Extract: `show_server_status()`, `_wg_runtime_dashboard()`, `_age_text()`, `_format_bytes()`.
+   - Dependencies: `subprocess`, `datetime`, `loom.wireguard.*`. Keep as is.
 
-3. **Создать `loom/commands/install_wireguard.py`**
-   - Вынести: `install_wireguard()`.
-   - Аргументы: имя интерфейса.
+3. **Create `loom/views/peer_views.py`**
+   - Extract: `list_peers()`, `peer_table()`, `show_peer()`, `show_peer_selection()`.
+   - Dependencies: `loom.wireguard.peer_manager.Peer`, `loom.cli.common`.
 
-4. **Создать `loom/commands/peer_lifecycle.py`**
-   - Вынести: `enable_peer()`, `disable_peer()`, `revoke_peer()`, `rotate_peer_keys()`, `remove_peer()`.
-   - Эти функции сложные — каждая содержит:
+4. **Create `loom/views/qr_display.py`**
+   - Extract: `prompt_for_qr_code()`, `display_peer_qr_code()`, `show_qr_code()`.
+   - Dependencies: `loom.wireguard.client_config`, `loom.views.peer_views`.
+
+5. **Create `loom/views/backup_views.py`**
+   - Extract: `list_backups()`, `create_backup()`, `restore_backup()`, `delete_backup()`.
+   - Dependencies: `loom.backup.manager`, `loom.cli.common`.
+
+6. **Create `loom/views/log_views.py`**
+   - Extract: `view_logs()`, `clear_logs()`, `export_logs()`.
+   - Dependencies: `loom.logging_system.logger`, `loom.cli.common`.
+
+7. **Update `loom/cli.py`**
+   - Replace View function calls with import from `loom.views`.
+   - Remove extracted code.
+
+**Completion Criteria:** `pytest` passes. `cli.py` is shorter by ~400 lines.
+
+---
+
+## Phase 3: Extracting Business Logic (`loom/commands/`)
+
+**Goal:** Separate actions that change something from UI. Functions that write files and call `subprocess.run` move to `loom/commands/`.
+
+### Steps:
+
+1. **Create `loom/commands/__init__.py`**
+
+2. **Create `loom/commands/configure_server.py`**
+   - Extract: `configure_server()`, `prompt_server_config()`, `validate_server_settings()`.
+   - Arguments: interface, config file. Return: result or exceptions.
+
+3. **Create `loom/commands/install_wireguard.py`**
+   - Extract: `install_wireguard()`.
+   - Arguments: interface name.
+
+4. **Create `loom/commands/peer_lifecycle.py`**
+   - Extract: `enable_peer()`, `disable_peer()`, `revoke_peer()`, `rotate_peer_keys()`, `remove_peer()`.
+   - These functions are complex — each contains:
      - `show_peer_selection()` (View)
      - `input()` (UI)
-     - бизнес-логику
-   - **Важно:** Функции команд НЕ должны вызывать `input()` или `print()`. Для этого создать отдельный слой интерфейса.
-   - **Решение:** В `commands/` вынести ТОЛЬКО чистую логику. В `cli/` оставить вызовы `input()` и передачу данных в команды.
+     - business logic
+   - **Important:** Command functions MUST NOT call `input()` or `print()`. Create a separate interface layer for this.
+   - **Decision:** In `commands/` extract ONLY pure logic. In `cli/` keep `input()` calls and pass data to commands.
 
-5. **Создать `loom/commands/key_rotation.py`**
-   - Вынести: `rotate_server_keys()`.
-   - Самая сложная функция: содержит rollback-логику, бэкапы, регенерацию клиентских конфигов.
+5. **Create `loom/commands/key_rotation.py`**
+   - Extract: `rotate_server_keys()`.
+   - The most complex function: contains rollback logic, backups, client config regeneration.
 
-6. **Создать `loom/commands/interface_manager.py`**
-   - Вынести: `manage_interfaces()`, `create_interface()`, `delete_interface()`.
+6. **Create `loom/commands/interface_manager.py`**
+   - Extract: `manage_interfaces()`, `create_interface()`, `delete_interface()`.
 
-7. **Создать `loom/commands/peer_expiry.py`**
-   - Вынести: `set_peer_expiry()`, `enforce_expired_peers()`.
+7. **Create `loom/commands/peer_expiry.py`**
+   - Extract: `set_peer_expiry()`, `enforce_expired_peers()`.
 
-8. **Создать `loom/commands/peer_import.py`**
-   - Вынести: `import_server_peers()`.
+8. **Create `loom/commands/peer_import.py`**
+   - Extract: `import_server_peers()`.
 
-9. **Создать `loom/commands/lifecycle.py`**
-   - Вынести: `remove_wireguard()`, `reinstall_wireguard()`.
+9. **Create `loom/commands/lifecycle.py`**
+   - Extract: `remove_wireguard()`, `reinstall_wireguard()`.
 
-10. **Обновить `loom/cli.py`**
-    - Заменить вызовы на импорт из `loom.commands`.
-    - Удалить вынесенный код.
+10. **Update `loom/cli.py`**
+    - Replace calls with import from `loom.commands`.
+    - Remove extracted code.
 
-**Критерий готовности:** `pytest` проходит. `cli.py` стал короче на ~800 строк.
+**Completion Criteria:** `pytest` passes. `cli.py` is shorter by ~800 lines.
 
 ---
 
-## Этап 4: Создание роутера и меню
+## Phase 4: Creating Router and Menus
 
-**Цель:** Создать структурированные меню в `loom/cli/` и роутер для навигации.
+**Goal:** Create structured menus in `loom/cli/` and a router for navigation.
 
-### Шаги:
+### Steps:
 
-1. **Создать `loom/cli/router.py`**
-   - `main_menu()` — главное меню, использует словарь маршрутов:
+1. **Create `loom/cli/router.py`**
+   - `main_menu()` — main menu, uses a routes dictionary:
      ```python
      ROUTES = {
          '1': ('server', server_menu.server_menu),
@@ -129,72 +129,72 @@
      }
      ```
 
-2. **Создать `loom/cli/server_menu.py`**
-   - `server_menu()` — меню сервера.
-   - Вызывает функции из `loom.commands` и `loom.views`.
+2. **Create `loom/cli/server_menu.py`**
+   - `server_menu()` — server menu.
+   - Calls functions from `loom.commands` and `loom.views`.
 
-3. **Создать `loom/cli/peers_menu.py`**
-   - `peers_menu()` — меню пиров.
+3. **Create `loom/cli/peers_menu.py`**
+   - `peers_menu()` — peers menu.
 
-4. **Создать `loom/cli/firewall_menu.py`**
-   - `firewall_menu()` — меню firewall.
+4. **Create `loom/cli/firewall_menu.py`**
+   - `firewall_menu()` — firewall menu.
 
-5. **Создать `loom/cli/diagnostics_menu.py`**
-   - `diagnostics_menu()` — меню диагностики.
+5. **Create `loom/cli/diagnostics_menu.py`**
+   - `diagnostics_menu()` — diagnostics menu.
 
-6. **Создать `loom/cli/backup_menu.py`**
-   - `backup_menu()` — меню бэкапов.
+6. **Create `loom/cli/backup_menu.py`**
+   - `backup_menu()` — backups menu.
 
-7. **Создать `loom/cli/logs_menu.py`**
-   - `logs_menu()` — меню логов.
+7. **Create `loom/cli/logs_menu.py`**
+   - `logs_menu()` — logs menu.
 
-8. **Создать `loom/cli/system_info_menu.py`**
-   - `system_info_menu()` — меню информации о системе.
-   - `version_menu()` — показ версии.
+8. **Create `loom/cli/system_info_menu.py`**
+   - `system_info_menu()` — system information menu.
+   - `version_menu()` — version display.
 
-9. **Обновить `loom/cli.py`**
-   - Оставить ТОЛЬКО `if __name__ == '__main__': main_menu()`.
-   - Удалить весь код меню и бизнес-логики.
+9. **Update `loom/cli.py`**
+   - Keep ONLY `if __name__ == '__main__': main_menu()`.
+   - Remove all menu code and business logic.
 
-**Критерий готовности:** `pytest` проходит. `cli.py` ~40 строк. Все новые файлы работают.
-
----
-
-## Этап 5: Финальная очистка
-
-**Цель:** Убрать старые зависимости, проверить все импорты, обновить `__init__.py`.
-
-### Шаги:
-
-1. **Проверить все импорты**
-   - Убедиться, что ни один модуль не импортирует что-то из `loom.cli.py` (кроме entry point).
-   - Убедиться, что нет циклических импортов.
-
-2. **Обновить `loom/__init__.py`**
-   - Добавить публичные импорты новых модулей.
-
-3. **Обновить `pyproject.toml`**
-   - Если нужно, добавить новые пакеты.
-
-4. **Запустить полный `pytest`**
-   - Убедиться, что все тесты проходят.
-   - Если какие-то тесты ссылаются на функции из `cli.py` — обновить их импорты.
-
-5. **Подготовить `_Trash/` папку**
-   - Если были удалённые части старого `cli.py`, перенести их в `_Trash/`.
-
-**Критерий готовности:** Чистый код, все тесты зелёные, `cli.py` < 60 строк.
+**Completion Criteria:** `pytest` passes. `cli.py` ~40 lines. All new files work.
 
 ---
 
-## Сводная оценка
+## Phase 5: Final Cleanup
 
-| Этап | Действие | Ожидаемый результат |
-|------|----------|---------------------|
-| 1 | `common.py` | ~80 строк вынесено |
-| 2 | `views/` | ~400 строк вынесено |
-| 3 | `commands/` | ~800 строк вынесено |
-| 4 | `cli/` меню | ~600 строк вынесено |
-| 5 | Очистка | `cli.py` < 60 строк |
+**Goal:** Remove old dependencies, check all imports, update `__init__.py`.
 
-**Итого:** cli.py сократится с 2604 до ~50 строк. Создастся ~12 новых файлов по 100-300 строк.
+### Steps:
+
+1. **Check all imports**
+   - Ensure no module imports anything from `loom.cli.py` (except entry point).
+   - Ensure no circular imports.
+
+2. **Update `loom/__init__.py`**
+   - Add public imports of new modules.
+
+3. **Update `pyproject.toml`**
+   - If needed, add new packages.
+
+4. **Run full `pytest`**
+   - Ensure all tests pass.
+   - If any tests reference functions from `cli.py` — update their imports.
+
+5. **Prepare `_Trash/` folder**
+   - If any parts of old `cli.py` were deleted, move them to `_Trash/`.
+
+**Completion Criteria:** Clean code, all tests green, `cli.py` < 60 lines.
+
+---
+
+## Summary Estimate
+
+| Phase | Action | Expected Result |
+|-------|--------|-----------------|
+| 1 | `common.py` | ~80 lines extracted |
+| 2 | `views/` | ~400 lines extracted |
+| 3 | `commands/` | ~800 lines extracted |
+| 4 | `cli/` menus | ~600 lines extracted |
+| 5 | Cleanup | `cli.py` < 60 lines |
+
+**Total:** cli.py will shrink from 2604 to ~50 lines. ~12 new files of 100-300 lines each will be created.

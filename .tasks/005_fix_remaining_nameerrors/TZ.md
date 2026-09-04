@@ -1,54 +1,54 @@
-# ТЗ: Исправление остающихся NameError после рефакторинга
+# TZ: Fixing Remaining NameError After Refactoring
 
-## 1. Проблема
+## 1. Problem
 
-Приложение запускается, но **падает при выполнении конкретных действий**:
+The application starts, but **crashes when performing specific actions**:
 - `View configuration` → `NameError: name 'pause' is not defined`
 - `Remove WireGuard` → `UnicodeDecodeError` + `NameError: name 'confirm' is not defined`
 - `Manage interfaces` → `NameError: name 'configured_interfaces' is not defined`
 - `Create peer` → `NameError: name 'console' is not defined`
 - `Remove peer` → `NameError: name 'console' is not defined`
 
-**Корень:** Авто-экстрактор разделил функции по файлам, но не перенёс все импорты для каждого файла. Частичные импорты Rich, `pause`, `confirm`, `configured_interfaces`.
+**Root:** The auto-extractor split functions into files, but did not carry all imports for each file. Partial imports of Rich, `pause`, `confirm`, `configured_interfaces`.
 
 ---
 
-## 2. Полный список ошибок
+## 2. Full Error List
 
-### 2.1. `commands/peer_crud.py` — отсутствует `console = Console()`
+### 2.1. `commands/peer_crud.py` — Missing `console = Console()`
 
-**Проблема:** Файл использует `console.print()` (строки 32, 36, 62, 66, 70, 78, 95, 113, 115, 117, 119, 123, 133, 142, 167, 169, 171, 179) — но **нигде не определён** `console = Console()`.
+**Problem:** File uses `console.print()` (lines 32, 36, 62, 66, 70, 78, 95, 113, 115, 117, 119, 123, 133, 142, 167, 169, 171, 179) — but **never defined** `console = Console()`.
 
-Строка 17 импортирует из common: `from ..cli.common import clear_screen, section_banner, pause, confirm, selected_interface, prompt_for_qr_code, display_peer_qr_code` — но **не импортирует Rich**.
+Line 17 imports from common: `from ..cli.common import clear_screen, section_banner, pause, confirm, selected_interface, prompt_for_qr_code, display_peer_qr_code` — but **does not import Rich**.
 
-**Исправление:** Добавить в начало файла (после строки 1):
+**Fix:** Add at top of file (after line 1):
 ```python
 from rich.console import Console
 console = Console()
 ```
 
-**Важно:** Не использовать `from ..cli.common import console` — это создаст циклический импорт, так как `common.py` может импортировать функции из `peer_crud.py`.
+**Important:** Do not use `from ..cli.common import console` — this would create a circular import, since `common.py` may import functions from `peer_crud.py`.
 
 ---
 
-### 2.2. `commands/peer_lifecycle.py` — отсутствует `console = Console()`
+### 2.2. `commands/peer_lifecycle.py` — Missing `console = Console()`
 
-**Проблема:** Строка 6 импортирует `from rich.console import Console` и строка 7 `from rich.panel import Panel` — но **нигде нет `console = Console()`**.
+**Problem:** Line 6 imports `from rich.console import Console` and line 7 `from rich.panel import Panel` — but **nowhere is `console = Console()`**.
 
-Файл использует `console.print()` (строки 43, 47, 50, 73, 77, 81, 91, 98, 101, 118, 122, 127, 148, 156, 159, 176, 180, 184, 259, 271, 274, 298, 304, 309, 312).
+File uses `console.print()` (lines 43, 47, 50, 73, 77, 81, 91, 98, 101, 118, 122, 127, 148, 156, 159, 176, 180, 184, 259, 271, 274, 298, 304, 309, 312).
 
-**Исправление:** Добавить после строки 8:
+**Fix:** Add after line 8:
 ```python
 console = Console()
 ```
 
 ---
 
-### 2.3. `commands/peer_import.py` — отсутствуют все Rich-импорты
+### 2.3. `commands/peer_import.py` — All Rich Imports Missing
 
-**Проблема:** Строка 94 использует `console.print()` — но файл не импортирует Rich вообще.
+**Problem:** Line 94 uses `console.print()` — but file does not import Rich at all.
 
-**Исправление:** Добавить в начало файла (после строки 1):
+**Fix:** Add at top of file (after line 1):
 ```python
 from rich.console import Console
 console = Console()
@@ -56,13 +56,13 @@ console = Console()
 
 ---
 
-### 2.4. `views/server_status.py` — отсутствует `pause` и `console`
+### 2.4. `views/server_status.py` — Missing `pause` and `console`
 
-**Проблема:** 
-- `show_server_config()` (строка 137, 147) вызывает `pause()` — не импортирована.
-- `show_server_config()` использует `console.print()` (строки 136, 142, 145) — `console` не определён.
+**Problem:**
+- `show_server_config()` (lines 137, 147) calls `pause()` — not imported.
+- `show_server_config()` uses `console.print()` (lines 136, 142, 145) — `console` not defined.
 
-**Исправление:** Добавить в начало файла:
+**Fix:** Add at top of file:
 ```python
 from rich.console import Console
 console = Console()
@@ -72,34 +72,34 @@ from ..cli.common import pause
 
 ---
 
-### 2.5. `cli/common.py` — функция `manage_interfaces()` использует `configured_interfaces()` без импорта
+### 2.5. `cli/common.py` — Function `manage_interfaces()` Uses `configured_interfaces()` Without Import
 
-**Проблема:** Строка 280: `interfaces = configured_interfaces()` — но `configured_interfaces` не импортирована в область видимости `manage_interfaces()`.
+**Problem:** Line 280: `interfaces = configured_interfaces()` — but `configured_interfaces` is not imported into `manage_interfaces()` scope.
 
-**Исправление:** Добавить в начало `manage_interfaces()`:
+**Fix:** Add at top of `manage_interfaces()`:
 ```python
 from ..wireguard.interfaces import configured_interfaces
 ```
 
-ИЛИ добавить в глобальные импорты файла (в начало `common.py`).
+OR add to global imports of file (at top of `common.py`).
 
 ---
 
-### 2.6. `commands/lifecycle.py` — `confirm()` не импортирована
+### 2.6. `commands/lifecycle.py` — `confirm()` Not Imported
 
-**Проблема:** Строка 17 в `remove_wireguard()` вызывает `confirm("Continue with removal?")` — но `confirm` не импортирована.
+**Problem:** Line 17 in `remove_wireguard()` calls `confirm("Continue with removal?")` — but `confirm` is not imported.
 
-Строка 6: `from ..cli.common import clear_screen, section_banner, pause, confirm` — **уже импортирована!**
+Line 6: `from ..cli.common import clear_screen, section_banner, pause, confirm` — **already imported!**
 
-Это значит, что проблема не в `confirm` в этом файле. Проблема в сообщении пользователя: `UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd1`. Это баг ввода/вывода терминала — `confirm()` получает байты вместо строк. Но затем возникает `NameError: name 'confirm' is not defined` — это **другой** файл.
+This means the problem is not `confirm` in this file. The problem is the user's message: `UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd1`. This is a terminal I/O bug — `confirm()` receives bytes instead of strings. But then a `NameError: name 'confirm' is not defined` occurs — this is **another** file.
 
-Проверяю: ошибка приходит из `lifecycle.py:18`. Импорт в строке 6 есть. Значит проблема не в lifecycle.py.
+Checking: error comes from `lifecycle.py:18`. Import at line 6 exists. So the problem is not in lifecycle.py.
 
-Перечитываю ошибку: `File "/root/loomwg/loom/commands/lifecycle.py", line 18, in remove_wireguard → if confirm("Continue with removal?"):`. Импорт confirm есть в строке 6. Значит проблема в том, что confirm() вызывается из другого контекста.
+Re-reading error: `File "/root/loomwg/loom/commands/lifecycle.py", line 18, in remove_wireguard → if confirm("Continue with removal?"):`. Confirm import exists at line 6. So the problem is that confirm() is called from another context.
 
-Нет — перечитываю: ошибка **после** `UnicodeDecodeError`. Сначала `confirm()` работает, получает некорректный ввод (байт 0xd1), выбрасывает `UnicodeDecodeError`. Затем **при обработке исключения** возникает новый `NameError` — но в каком файле?
+No — re-reading: error **after** `UnicodeDecodeError`. First `confirm()` works, receives incorrect input (byte 0xd1), throws `UnicodeDecodeError`. Then **during exception handling** a new `NameError` occurs — but in which file?
 
-Перечитываю traceback:
+Re-reading traceback:
 ```
 File "lifecycle.py", line 18, in remove_wireguard
     if confirm("Continue with removal?"):
@@ -108,9 +108,9 @@ File "common.py", line 169, in confirm
 UnicodeDecodeError
 ```
 
-Значит проблема в `confirm()` в `common.py` — он падает на вводе с неверной кодировкой. Это не NameError, это UnicodeDecodeError. Это баг обработки ввода — `confirm()` не должен падать на не-UTF8 вводе.
+So the problem is in `confirm()` in `common.py` — it crashes on input with wrong encoding. This is not a NameError, it's a UnicodeDecodeError. This is an input processing bug — `confirm()` should not crash on non-UTF8 input.
 
-**Исправление:** Добавить try/except в `confirm()`:
+**Fix:** Add try/except to `confirm()`:
 ```python
 def confirm(prompt: str = "Continue?") -> bool:
     """Ask for confirmation."""
@@ -129,43 +129,43 @@ def confirm(prompt: str = "Continue?") -> bool:
 
 ---
 
-## 3. Сводная таблица
+## 3. Summary Table
 
-| # | Файл | Проблема | Исправление |
-|---|------|----------|-------------|
-| 1 | `commands/peer_crud.py` | Нет `console = Console()` | Добавить `from rich.console import Console` + `console = Console()` в начало |
-| 2 | `commands/peer_lifecycle.py` | Нет `console = Console()` | Добавить `console = Console()` после строки 8 |
-| 3 | `commands/peer_import.py` | Нет Rich-импортов | Добавить `from rich.console import Console` + `console = Console()` в начало |
-| 4 | `views/server_status.py` | Нет `pause` и `console` | Добавить `from rich.console import Console` + `console = Console()` + `from ..cli.common import pause` |
-| 5 | `cli/common.py` | `manage_interfaces()` без `configured_interfaces` | Добавить `from ..wireguard.interfaces import configured_interfaces` в начало файла |
-| 6 | `cli/common.py` | `confirm()` падает на UnicodeDecodeError | Добавить try/except в `confirm()` |
-
----
-
-## 4. Порядок исправления
-
-### Шаг 1: Добавить `console = Console()` в 3 command-файла
-- `commands/peer_crud.py` — добавить Rich-импорт + console
-- `commands/peer_lifecycle.py` — добавить `console = Console()`
-- `commands/peer_import.py` — добавить Rich-импорт + console
-
-### Шаг 2: Добавить `pause` + `console` в views
-- `views/server_status.py` — добавить `pause` и `console`
-
-### Шаг 3: Исправить `common.py`
-- Добавить `configured_interfaces` в `manage_interfaces()`
-- Добавить `try/except` в `confirm()` для UnicodeDecodeError
-
-### Шаг 4: `pytest`
-Убедиться что 58/58 проходят.
+| # | File | Problem | Fix |
+|---|------|---------|-----|
+| 1 | `commands/peer_crud.py` | No `console = Console()` | Add `from rich.console import Console` + `console = Console()` at top |
+| 2 | `commands/peer_lifecycle.py` | No `console = Console()` | Add `console = Console()` after line 8 |
+| 3 | `commands/peer_import.py` | No Rich imports | Add `from rich.console import Console` + `console = Console()` at top |
+| 4 | `views/server_status.py` | No `pause` and `console` | Add `from rich.console import Console` + `console = Console()` + `from ..cli.common import pause` |
+| 5 | `cli/common.py` | `manage_interfaces()` without `configured_interfaces` | Add `from ..wireguard.interfaces import configured_interfaces` at top of file |
+| 6 | `cli/common.py` | `confirm()` crashes on UnicodeDecodeError | Add try/except in `confirm()` |
 
 ---
 
-## 5. Критерии приёмки
+## 4. Fix Order
 
-1. ✅ `View configuration` (выбор 3 в server_menu) — не падает
-2. ✅ `Remove WireGuard` (выбор 8 в server_menu) — не падает на UnicodeDecodeError
-3. ✅ `Manage interfaces` (выбор 11 в server_menu) — не падает
-4. ✅ `Create peer` — не падает на `console.print`
-5. ✅ `Remove peer` — не падает на `console.print`
+### Step 1: Add `console = Console()` to 3 command files
+- `commands/peer_crud.py` — add Rich import + console
+- `commands/peer_lifecycle.py` — add `console = Console()`
+- `commands/peer_import.py` — add Rich import + console
+
+### Step 2: Add `pause` + `console` to views
+- `views/server_status.py` — add `pause` and `console`
+
+### Step 3: Fix `common.py`
+- Add `configured_interfaces` to `manage_interfaces()`
+- Add `try/except` in `confirm()` for UnicodeDecodeError
+
+### Step 4: `pytest`
+Ensure 58/58 pass.
+
+---
+
+## 5. Acceptance Criteria
+
+1. ✅ `View configuration` (select 3 in server_menu) — does not crash
+2. ✅ `Remove WireGuard` (select 8 in server_menu) — does not crash on UnicodeDecodeError
+3. ✅ `Manage interfaces` (select 11 in server_menu) — does not crash
+4. ✅ `Create peer` — does not crash on `console.print`
+5. ✅ `Remove peer` — does not crash on `console.print`
 6. ✅ `pytest` — 58/58 passed

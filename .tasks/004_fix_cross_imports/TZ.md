@@ -1,84 +1,84 @@
-# ТЗ: Исправление кросс-импортов и недостающих импортов
+# TZ: Fixing Cross-Imports and Missing Imports
 
-## 1. Проблема
+## 1. Problem
 
-Приложение запускается, но **падает при выполнении любых действий** (создание конфига, создание пира, удаление и т.д.) из-за `NameError: name 'xxx' is not defined`.
+The application starts, but **crashes when performing any actions** (creating config, creating peer, deleting, etc.) due to `NameError: name 'xxx' is not defined`.
 
-**Корень:** Авто-экстракция разделила функции по файлам, но **не добавила кросс-импорты** — функции вызывают другие функции из других файлов, но не импортировали их. Также есть баг: часть файлов импортирует `config_path as interface_config_path`, а код внутри использует `config_path()`.
+**Root:** Auto-extraction split functions into files, but **did not add cross-imports** — functions call other functions from other files, but did not import them. Also there is a bug: some files import `config_path as interface_config_path`, but the code inside uses `config_path()`.
 
 ---
 
-## 2. Полный список ошибок
+## 2. Full Error List
 
 ### 2.1. `commands/configure_server.py`
 
-**Ошибка:** Вызывает `install_wireguard()` (строка 40) — функция из `install_wireguard.py`, не импортирована.
+**Error:** Calls `install_wireguard()` (line 40) — function from `install_wireguard.py`, not imported.
 
-**Дополнительно:** Файл импортирует `config_path as interface_config_path` (строка 18), но **нигде не вызывает** `interface_config_path()` — это OK (функция `config_path` не используется напрямую).
+**Additionally:** File imports `config_path as interface_config_path` (line 18), but **never calls** `interface_config_path()` — this is OK (the `config_path` function is not called directly).
 
-**Исправление:** Добавить импорт `install_wireguard` из `commands/install_wireguard.py`.
+**Fix:** Add import `install_wireguard` from `commands/install_wireguard.py`.
 
 ### 2.2. `commands/install_wireguard.py`
 
-**Ошибка:** Вызывает `prompt_server_config()` (строка 74) и `validate_server_settings()` (строка 76) — функции из `configure_server.py`, не импортированы.
+**Error:** Calls `prompt_server_config()` (line 74) and `validate_server_settings()` (line 76) — functions from `configure_server.py`, not imported.
 
-**Исправление:** Добавить импорт из `commands/configure_server.py`:
+**Fix:** Add import from `commands/configure_server.py`:
 ```python
 from ..commands.configure_server import prompt_server_config, validate_server_settings
 ```
 
 ### 2.3. `commands/lifecycle.py`
 
-**Ошибка:** `reinstall_wireguard()` вызывает `install_wireguard()` (строка 38) — функция из `install_wireguard.py`, не импортирована.
+**Error:** `reinstall_wireguard()` calls `install_wireguard()` (line 38) — function from `install_wireguard.py`, not imported.
 
-**Исправление:** Добавить импорт:
+**Fix:** Add import:
 ```python
 from ..commands.install_wireguard import install_wireguard
 ```
 
 ### 2.4. `commands/peer_crud.py`
 
-**Ошибка:** `config_path` импортирован как `from ..wireguard.interfaces import config_path` (строка 14), но используется как функция `interface_config_path()` (строка 42, 144) — **имя не совпадает!**
+**Error:** `config_path` is imported as `from ..wireguard.interfaces import config_path` (line 14), but used as function `interface_config_path()` (lines 42, 144) — **name does not match!**
 
-Код: `config_path = interface_config_path(interface)` → NameError: `interface_config_path` не определён.
+Code: `config_path = interface_config_path(interface)` → NameError: `interface_config_path` is not defined.
 
-**Исправление:** Изменить импорт на:
+**Fix:** Change import to:
 ```python
 from ..wireguard.interfaces import config_path as interface_config_path
 ```
 
-**Также:** Не импортирована `SystemDetector`:
+**Also:** `SystemDetector` is not imported:
 ```python
 from ..system.info import SystemDetector
 ```
 
 ### 2.5. `commands/peer_lifecycle.py`
 
-**Ошибка:** `config_path` импортирован как `from ..wireguard.interfaces import config_path` (строка 17), но используется как `interface_config_path()` (строки 37, 85, 133, 193).
+**Error:** `config_path` is imported as `from ..wireguard.interfaces import config_path` (line 17), but used as `interface_config_path()` (lines 37, 85, 133, 193).
 
-**Исправление:** Изменить импорт на:
+**Fix:** Change import to:
 ```python
 from ..wireguard.interfaces import config_path as interface_config_path
 ```
 
-**Также:** `show_peer_selection()` используется (строки 28, 64, 114, 172) — не импортирована. Должна приходить из `views.peer_views`.
+**Also:** `show_peer_selection()` is used (lines 28, 64, 114, 172) — not imported. Must come from `views.peer_views`.
 
-**Исправление:** Добавить импорт:
+**Fix:** Add import:
 ```python
 from ..views.peer_views import show_peer_selection
 ```
 
 ### 2.6. `commands/peer_expiry.py`
 
-**Двойной импорт:** Строки 2-13 и 15-20 — полный дубликат содержимого!
+**Double import:** Lines 2-13 and 15-20 — complete content duplicate!
 
-**Ошибка 1:** `show_peer_selection()` используется (строки 46, 68) — не импортирована.
+**Error 1:** `show_peer_selection()` is used (lines 46, 68) — not imported.
 
-**Ошибка 2:** `WireGuardManager` используется (строка 34) — не импортирована.
+**Error 2:** `WireGuardManager` is used (line 34) — not imported.
 
-**Ошибка 3:** `ConfigGenerator` используется (строки 25, 36) — не импортирована.
+**Error 3:** `ConfigGenerator` is used (lines 25, 36) — not imported.
 
-**Исправление:**
+**Fix:**
 ```python
 from ..wireguard.manager import WireGuardManager
 from ..wireguard.config_generator import ConfigGenerator
@@ -87,11 +87,11 @@ from ..views.peer_views import show_peer_selection
 
 ### 2.7. `commands/peer_import.py`
 
-**Ошибка:** `SystemDetector` используется (строка 25) — не импортирована.
+**Error:** `SystemDetector` is used (line 25) — not imported.
 
-**Ошибка:** `Peer` используется (строка 81) — не импортирована.
+**Error:** `Peer` is used (line 81) — not imported.
 
-**Исправление:** Добавить:
+**Fix:** Add:
 ```python
 from ..system.info import SystemDetector
 from ..wireguard.peer_manager import Peer
@@ -99,27 +99,27 @@ from ..wireguard.peer_manager import Peer
 
 ### 2.8. `commands/backup_commands.py`
 
-**Двойной импорт:** Строки 2-12 и 14-21 — полный дубликат содержимого!
+**Double import:** Lines 2-12 and 14-21 — complete content duplicate!
 
-Никаких критических ошибок — все импорты на месте, просто дубликат кода.
+No critical errors — all imports are in place, just code duplicate.
 
 ### 2.9. `commands/diagnostics_commands.py`
 
-**Двойной импорт:** Строки 2-15 и 17-27 — полный дубликат содержимого!
+**Double import:** Lines 2-15 and 17-27 — complete content duplicate!
 
-Никаких критических ошибок — просто дубликат кода.
+No critical errors — just code duplicate.
 
 ### 2.10. `commands/firewall_commands.py`
 
-**Двойной импорт:** Строки 2-12 и 14-21 — полный дубликат содержимого!
+**Double import:** Lines 2-12 and 14-21 — complete content duplicate!
 
-Никаких критических ошибок — просто дубликат кода.
+No critical errors — just code duplicate.
 
 ### 2.11. `cli/system_info_menu.py`
 
-**Не хватает импортов:**
-| Имя | Строка | Где используется |
-|-----|--------|-----------------|
+**Missing imports:**
+| Name | Line | Where used |
+|------|------|------------|
 | `Table` | 36 | `Table.grid()` |
 | `ServerConfig` | 45 | `ServerConfig.from_file()` |
 | `FirewalldManager` | 53 | `firewall.is_installed()` |
@@ -129,7 +129,7 @@ from ..wireguard.peer_manager import Peer
 | `_wg_runtime_dashboard` | 48 | `_wg_runtime_dashboard()` |
 | `Panel` | 55 | `Panel(details, ...)` |
 
-**Исправление:** Добавить в начало файла:
+**Fix:** Add at top of file:
 ```python
 from rich.console import Console
 from rich.panel import Panel
@@ -148,86 +148,86 @@ console = Console()
 
 ### 2.12. `cli/peers_menu.py`
 
-**Ошибка:** `show_peer()` вызывается (строка 58) — не импортирована. Должна приходить из `views.peer_views`.
+**Error:** `show_peer()` is called (line 58) — not imported. Must come from `views.peer_views`.
 
-**Исправление:** Добавить в импорт:
+**Fix:** Add to import:
 ```python
 from ..views.peer_views import list_peers, peer_table, show_peer_selection, show_peer
 ```
 
 ### 2.13. `cli/firewall_menu.py`
 
-**Ошибка:** `show_firewall_status` импортирован из `..views.log_views` (строка 5), но название `show_firewall_status` скорее всего находится в `views.backup_views` или другом view-модуле. Нужно проверить реальное расположение.
+**Error:** `show_firewall_status` is imported from `..views.log_views` (line 5), but the name `show_firewall_status` probably lives in `views.backup_views` or another view module. Need to check actual location.
 
-**Исправление:** Проверить, где определена `show_firewall_status()`, и исправить импорт.
+**Fix:** Check where `show_firewall_status()` is defined, and fix import.
 
 ### 2.14. `cli/common.py`
 
-**Функция `manage_interfaces()`:** Вызывается из `server_menu.py` (строка 99), определена в `common.py` (восстановлена из _Trash). Проверить, что импорты внутри неё корректны.
+**Function `manage_interfaces()`:** Called from `server_menu.py` (line 99), defined in `common.py` (restored from _Trash). Check that imports inside it are correct.
 
 ---
 
-## 3. Сводная таблица всех исправлений
+## 3. Summary Table of All Fixes
 
-### Критические (NameError, блокируют работу):
+### Critical (NameError, block work):
 
-| Файл | Что исправить | Строки |
+| File | What to fix | Lines |
 |------|--------------|--------|
-| `commands/configure_server.py` | Добавить `from ..commands.install_wireguard import install_wireguard` | ~1 |
-| `commands/install_wireguard.py` | Добавить `from ..commands.configure_server import prompt_server_config, validate_server_settings` | ~1 |
-| `commands/lifecycle.py` | Добавить `from ..commands.install_wireguard import install_wireguard` | ~1 |
-| `commands/peer_crud.py` | `config_path` → `config_path as interface_config_path`, добавить `SystemDetector` | ~2 |
-| `commands/peer_lifecycle.py` | `config_path` → `config_path as interface_config_path`, добавить `show_peer_selection` из views | ~2 |
-| `commands/peer_expiry.py` | Убрать дубликат импортов, добавить `WireGuardManager`, `ConfigGenerator`, `show_peer_selection` | ~5 |
-| `commands/peer_import.py` | Добавить `SystemDetector`, `Peer` | ~2 |
-| `cli/system_info_menu.py` | Добавить 8 недостающих импортов (Table, Panel, ServerConfig, FirewalldManager, NetworkManager, ServiceManager, PeerManager, _wg_runtime_dashboard) | ~8 |
-| `cli/peers_menu.py` | Добавить `show_peer` в импорт из views | ~1 |
-| `cli/firewall_menu.py` | Исправить импорт `show_firewall_status` (вероятно, должен быть из другого модуля) | ~1 |
+| `commands/configure_server.py` | Add `from ..commands.install_wireguard import install_wireguard` | ~1 |
+| `commands/install_wireguard.py` | Add `from ..commands.configure_server import prompt_server_config, validate_server_settings` | ~1 |
+| `commands/lifecycle.py` | Add `from ..commands.install_wireguard import install_wireguard` | ~1 |
+| `commands/peer_crud.py` | `config_path` → `config_path as interface_config_path`, add `SystemDetector` | ~2 |
+| `commands/peer_lifecycle.py` | `config_path` → `config_path as interface_config_path`, add `show_peer_selection` from views | ~2 |
+| `commands/peer_expiry.py` | Remove import duplicate, add `WireGuardManager`, `ConfigGenerator`, `show_peer_selection` | ~5 |
+| `commands/peer_import.py` | Add `SystemDetector`, `Peer` | ~2 |
+| `cli/system_info_menu.py` | Add 8 missing imports (Table, Panel, ServerConfig, FirewalldManager, NetworkManager, ServiceManager, PeerManager, _wg_runtime_dashboard) | ~8 |
+| `cli/peers_menu.py` | Add `show_peer` to import from views | ~1 |
+| `cli/firewall_menu.py` | Fix import `show_firewall_status` (probably should be from another module) | ~1 |
 
-### Не критические (дубликаты, но не блокируют):
+### Non-critical (duplicates, but do not block):
 
-| Файл | Проблема | Исправление |
-|------|----------|-------------|
-| `commands/backup_commands.py` | Дубликат импортов (строки 2-12 и 14-21) | Удалить дубликат |
-| `commands/diagnostics_commands.py` | Дубликат импортов (строки 2-15 и 17-27) | Удалить дубликат |
-| `commands/firewall_commands.py` | Дубликат импортов (строки 2-12 и 14-21) | Удалить дубликат |
-
----
-
-## 4. Порядок исправления
-
-### Шаг 1: Кросс-импорты между commands (блокирует создание конфига)
-- `configure_server.py` → добавить `install_wireguard`
-- `install_wireguard.py` → добавить `prompt_server_config`, `validate_server_settings`
-- `lifecycle.py` → добавить `install_wireguard`
-
-### Шаг 2: Кросс-импорты в commands (блокирует работу с пирами)
-- `peer_crud.py` → исправить `config_path`, добавить `SystemDetector`
-- `peer_lifecycle.py` → исправить `config_path`, добавить `show_peer_selection`
-- `peer_expiry.py` → убрать дубликат, добавить `WireGuardManager`, `ConfigGenerator`, `show_peer_selection`
-- `peer_import.py` → добавить `SystemDetector`, `Peer`
-
-### Шаг 3: CLI-меню (блокирует отображение меню)
-- `system_info_menu.py` → добавить 8 импортов
-- `peers_menu.py` → добавить `show_peer`
-- `firewall_menu.py` → исправить импорт
-
-### Шаг 4: Убрать дубликаты импортов
-- `backup_commands.py` — убрать строки 14-21
-- `diagnostics_commands.py` — убрать строки 17-27
-- `firewall_commands.py` — убрать строки 14-21
-
-### Шаг 5: `pytest`
-Убедиться что 58/58 проходят.
+| File | Problem | Fix |
+|------|---------|-----|
+| `commands/backup_commands.py` | Import duplicate (lines 2-12 and 14-21) | Remove duplicate |
+| `commands/diagnostics_commands.py` | Import duplicate (lines 2-15 and 17-27) | Remove duplicate |
+| `commands/firewall_commands.py` | Import duplicate (lines 2-12 and 14-21) | Remove duplicate |
 
 ---
 
-## 5. Критерии приёмки
+## 4. Fix Order
 
-1. ✅ `configure_server()` работает без `NameError`
-2. ✅ `install_wireguard()` работает без `NameError`
-3. ✅ `create_peer()` работает без `NameError`
-4. ✅ `enable_peer()` / `disable_peer()` работают без `NameError`
-5. ✅ `system_info_menu()` не падает
+### Step 1: Cross-imports between commands (blocks config creation)
+- `configure_server.py` → add `install_wireguard`
+- `install_wireguard.py` → add `prompt_server_config`, `validate_server_settings`
+- `lifecycle.py` → add `install_wireguard`
+
+### Step 2: Cross-imports in commands (blocks peer work)
+- `peer_crud.py` → fix `config_path`, add `SystemDetector`
+- `peer_lifecycle.py` → fix `config_path`, add `show_peer_selection`
+- `peer_expiry.py` → remove duplicate, add `WireGuardManager`, `ConfigGenerator`, `show_peer_selection`
+- `peer_import.py` → add `SystemDetector`, `Peer`
+
+### Step 3: CLI-menus (blocks menu display)
+- `system_info_menu.py` → add 8 imports
+- `peers_menu.py` → add `show_peer`
+- `firewall_menu.py` → fix import
+
+### Step 4: Remove import duplicates
+- `backup_commands.py` — remove lines 14-21
+- `diagnostics_commands.py` — remove lines 17-27
+- `firewall_commands.py` — remove lines 14-21
+
+### Step 5: `pytest`
+Ensure 58/58 pass.
+
+---
+
+## 5. Acceptance Criteria
+
+1. ✅ `configure_server()` works without `NameError`
+2. ✅ `install_wireguard()` works without `NameError`
+3. ✅ `create_peer()` works without `NameError`
+4. ✅ `enable_peer()` / `disable_peer()` work without `NameError`
+5. ✅ `system_info_menu()` does not crash
 6. ✅ `pytest` — 58/58 passed
-7. ✅ Нет дубликатов импортов
+7. ✅ No import duplicates

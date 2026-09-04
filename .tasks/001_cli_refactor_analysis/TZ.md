@@ -1,23 +1,23 @@
-# ТЗ: Декомпозиция `loom/cli.py` (Рефакторинг God File)
+# TZ: Decomposition of `loom/cli.py` (Refactoring God File)
 
-## 1. Контекст и Цель
-**Задача:** Разбить файл `loom/cli.py` (2604 строки) на модульную структуру.
-**Цель:** Разделить ответственность между навигацией (UI), бизнес-логикой (Commands) и отрисовкой (Views).
-**Правила:**
-- Не удалять старый код, переносить в `_Trash/`.
-- Запускать `pytest` после каждого этапа.
-- Соблюдать принцип единой ответственности (SRP).
+## 1. Context and Goal
+**Task:** Break the file `loom/cli.py` (2604 lines) into a modular structure.
+**Goal:** Separate responsibility between navigation (UI), business logic (Commands), and rendering (Views).
+**Rules:**
+- Do not delete old code, move it to `_Trash/`.
+- Run `pytest` after each phase.
+- Follow the Single Responsibility Principle (SRP).
 
 ---
 
-## 2. Новая Архитектура
+## 2. New Architecture
 
 ```text
 loom/
-├── cli/                      # СЛОЙ 1: Навигация и Ввод
-│   ├── __init__.py           # Импорты меню
-│   ├── router.py             # Главный роутер (main)
-│   ├── common.py             # Утилиты: clear_screen, pause, confirm, banner
+├── cli/                      # LAYER 1: Navigation and Input
+│   ├── __init__.py           # Menu imports
+│   ├── router.py             # Main router (main)
+│   ├── common.py             # Utilities: clear_screen, pause, confirm, banner
 │   ├── main_menu.py          # main_menu
 │   ├── server_menu.py        # server_menu + sub-actions
 │   ├── peers_menu.py         # peers_menu + sub-actions
@@ -27,36 +27,36 @@ loom/
 │   ├── logs_menu.py          # logs_menu
 │   └── system_info_menu.py   # system_info_menu + version
 │
-├── commands/                 # СЛОЙ 2: Бизнес-логика (Действия)
-│   ├── __init__.py           # Импорты команд
-│   ├── configure_server.py   # configure_server (чистая логика)
+├── commands/                 # LAYER 2: Business Logic (Actions)
+│   ├── __init__.py           # Command imports
+│   ├── configure_server.py   # configure_server (pure logic)
 │   ├── install_wireguard.py  # install_wireguard
-│   ├── create_peer.py        # create_peer (логика IP, ключей)
+│   ├── create_peer.py        # create_peer (IP logic, keys)
 │   ├── peer_lifecycle.py     # enable_peer, disable_peer, revoke_peer, rotate_peer_keys, remove_peer
-│   ├── key_rotation.py       # rotate_server_keys (сложная логика с rollback)
+│   ├── key_rotation.py       # rotate_server_keys (complex logic with rollback)
 │   ├── interface_manager.py  # manage_interfaces, create_interface, delete_interface
 │   ├── peer_expiry.py        # set_peer_expiry, enforce_expired_peers
 │   ├── peer_import.py        # import_server_peers
 │   └── lifecycle.py          # remove_wireguard, reinstall_wireguard
 │
-├── views/                    # СЛОЙ 3: Отрисовка (UI)
-│   ├── __init__.py           # Импорты view
+├── views/                    # LAYER 3: Rendering (UI)
+│   ├── __init__.py           # View imports
 │   ├── server_status.py      # show_server_status, _wg_runtime_dashboard
 │   ├── peer_views.py         # peer_table, show_peer, show_peer_selection
 │   ├── qr_display.py         # display_peer_qr_code, show_qr_code
 │   ├── backup_views.py       # table creation for backups
-│   ├── log_views.py          # view_logs (форматирование)
-│   └── system_dashboard.py   # system_info_menu (рендеринг панелей)
+│   ├── log_views.py          # view_logs (formatting)
+│   └── system_dashboard.py   # system_info_menu (panel rendering)
 │
-└── cli.py                    # ТОЛЬКО Точка входа (40-50 строк)
+└── cli.py                    # ONLY Entry Point (40-50 lines)
 ```
 
 ---
 
-## 3. Детальные Требования к Модулям
+## 3. Detailed Module Requirements
 
 ### 3.1. `loom/cli/common.py`
-**Содержимое:** Вынести общие функции, используемые в каждом меню.
+**Contents:** Extract common functions used in every menu.
 - `clear_screen()`
 - `pause()`
 - `confirm(prompt)`
@@ -67,62 +67,62 @@ loom/
 - `selected_interface()`, `select_interface()`
 - `prompt_for_qr_code()`
 
-**Ограничение:** Никакой бизнес-логики, только UI-хелперы.
+**Constraint:** No business logic, only UI helpers.
 
 ### 3.2. `loom/commands/...`
-**Содержимое:** Извлечь функции, которые что-то меняют (запись на диск, выполнение команд `wg`, `dnf`).
-- **Пример `create_peer`:** Функция должна принимать имя, IP и ключи как аргументы, выполнять логику добавления пира и возвращать результат или объект `Peer`. Она **НЕ должна** вызывать `input()` или `console.print()`.
-- **Пример `rotate_server_keys`:** Должна принимать текущий конфиг и возвращать новый (с проверками), без `clear_screen`.
+**Contents:** Extract functions that change something (disk writes, executing `wg`, `dnf` commands).
+- **Example `create_peer`:** The function must accept name, IP, and keys as arguments, perform peer addition logic, and return a result or `Peer` object. It **MUST NOT** call `input()` or `console.print()`.
+- **Example `rotate_server_keys`:** Must accept the current config and return a new one (with checks), without `clear_screen`.
 
-**Список файлов и что в них класть:**
-1.  **`configure_server.py`**: Логика `configure_server`.
-2.  **`install_wireguard.py`**: Логика `install_wireguard`.
-3.  **`create_peer.py`**: Логика `create_peer`.
+**File list and what to put in them:**
+1.  **`configure_server.py`**: Logic of `configure_server`.
+2.  **`install_wireguard.py`**: Logic of `install_wireguard`.
+3.  **`create_peer.py`**: Logic of `create_peer`.
 4.  **`peer_lifecycle.py`**: `enable_peer`, `disable_peer`, `revoke_peer`, `rotate_peer_keys`, `remove_peer`.
-5.  **`key_rotation.py`**: `rotate_server_keys` (самая сложная, требует тестов на rollback).
+5.  **`key_rotation.py`**: `rotate_server_keys` (the most complex, requires rollback tests).
 6.  **`interface_manager.py`**: `manage_interfaces`, `create_interface`, `delete_interface`.
 7.  **`peer_expiry.py`**: `set_peer_expiry`, `enforce_expired_peers`.
 8.  **`peer_import.py`**: `import_server_peers`.
 9.  **`lifecycle.py`**: `remove_wireguard`, `reinstall_wireguard`.
 
 ### 3.3. `loom/views/...`
-**Содержимое:** Извлечь функции, которые только читают данные и выводят их (Rich Console).
-1.  **`server_status.py`**: `show_server_status`, `_wg_runtime_dashboard` (можно оставить здесь или в commands, если это чистая обработка данных).
+**Contents:** Extract functions that only read data and output it (Rich Console).
+1.  **`server_status.py`**: `show_server_status`, `_wg_runtime_dashboard` (can stay here or in commands if it's pure data processing).
 2.  **`peer_views.py`**: `peer_table`, `show_peer`, `show_peer_selection`.
 3.  **`qr_display.py`**: `display_peer_qr_code`, `show_qr_code`.
-4.  **`backup_views.py`**: Вывод списков бэкапов (форматирование таблиц).
+4.  **`backup_views.py`**: Backup list output (table formatting).
 5.  **`log_views.py`**: `view_logs`.
 6.  **`system_dashboard.py`**: `system_info_menu`.
 
 ### 3.4. `loom/cli/router.py`
-**Содержимое:** Главный контроллер.
-- `main_menu()`: Отображает меню, получает выбор `input()`, вызывает соответствующую функцию из `commands` или вложенное меню.
-- Использовать паттерн "Входящая функция вызывает View + Command".
+**Contents:** Main controller.
+- `main_menu()`: Displays the menu, receives `input()` choice, calls the corresponding function from `commands` or a nested menu.
+- Use the "Incoming function calls View + Command" pattern.
 
 ---
 
-## 4. Правила Рефакторинга
+## 4. Refactoring Rules
 
-1.  **Разделение логики и UI:**
-    - `commands` НЕ делают `print`, `input`, `console.print`, `clear_screen`.
-    - `views` НЕ делают `subprocess.run`, `open('w')`, `peer_mgr.add_peer()`.
-    - `cli` управляет потоком: "Спросить ввод -> Передать в Command -> Взять результат -> Передать в View".
+1.  **Separation of logic and UI:**
+    - `commands` MUST NOT do `print`, `input`, `console.print`, `clear_screen`.
+    - `views` MUST NOT do `subprocess.run`, `open('w')`, `peer_mgr.add_peer()`.
+    - `cli` manages the flow: "Ask for input -> Pass to Command -> Get result -> Pass to View".
 
-2.  **Работа с импортами:**
-    - Не создавать циклических импортов.
-    - Старые импорты в `cli.py` аккуратно перераспределить по новым файлам.
+2.  **Import management:**
+    - Do not create circular imports.
+    - Carefully redistribute old imports in `cli.py` across new files.
 
-3.  **Поэтапность:**
-    - Сначала вынести `common.py` (самое безопасное).
-    - Затем вынести View-функции (просто перемещение кода).
-    - Затем вынести команды (требует адаптации передачи аргументов).
-    - В конце обновить `cli.py` (вставить вызовы новых модулей).
+3.  **Phased approach:**
+    - First extract `common.py` (the safest).
+    - Then extract View functions (just moving code).
+    - Then extract commands (requires adapting argument passing).
+    - Finally update `cli.py` (insert calls to new modules).
 
-4.  **Тестирование:**
-    - После каждого переноса функции (например, `create_peer`) убедиться, что `pytest` проходит или функция изолирована и протестирована отдельно.
+4.  **Testing:**
+    - After each function move (e.g., `create_peer`) ensure `pytest` passes or the function is isolated and tested separately.
 
-## 5. Критерии Приемки
-1.  `loom/cli.py` содержит не более 50-60 строк (точка входа и роутер).
-2.  Нет дублирования `clear_screen()`, `pause()`, `confirm()`.
-3.  Нет бизнес-логики в файлах с суффиксом `_menu.py`.
-4.  `pytest` проходит успешно.
+## 5. Acceptance Criteria
+1.  `loom/cli.py` contains no more than 50-60 lines (entry point and router).
+2.  No duplication of `clear_screen()`, `pause()`, `confirm()`.
+3.  No business logic in files with the `_menu.py` suffix.
+4.  `pytest` passes successfully.

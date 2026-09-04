@@ -1,62 +1,62 @@
-# ТЗ: Полный аудит отсутствующих импортов — раунд 006
+# TZ: Full Import Audit — Round 006
 
-## 1. Проблема
+## 1. Problem
 
-Авто-экстрактор разделил `cli.py` (2604 строки) на ~30 файлов, но **не перенёс все импорты** для каждого файла. Функции используют имена из соседних модулей без соответствующих `import`.
+The auto-extractor split `cli.py` (2604 lines) into ~30 files, but **did not carry all imports** for each file. Functions use names from neighboring modules without corresponding `import`.
 
 ---
 
-## 2. Полный аудит — все файлы
+## 2. Full Audit — All Files
 
-Проверено 60+ `.py` файлов. Найденные ошибки:
+Checked 60+ `.py` files. Found errors:
 
-### 2.1. `cli/common.py` — `delete_interface()` без `interface_config_path`
+### 2.1. `cli/common.py` — `delete_interface()` without `interface_config_path`
 
-**Проблема:** Строка 344:
+**Problem:** Line 344:
 ```python
 def delete_interface() -> None:
     from ..wireguard.manager import WireGuardManager
     from ..system.services import ServiceManager
     from ..logging_system.logger import LoomLogger
-    # ^^^^^^ нет interface_config_path!
+    # ^^^^^^ no interface_config_path!
     path = interface_config_path(interface)  # ← NameError!
 ```
 
-`interface_config_path` импортирован внутри `create_interface()` (строка 71-75), но **не в `delete_interface()`**.
+`interface_config_path` is imported inside `create_interface()` (lines 71-75), but **not in `delete_interface()`**.
 
-**Исправление:** Добавить в начало `delete_interface()` (после строки 336):
+**Fix:** Add at top of `delete_interface()` (after line 336):
 ```python
 from ..wireguard.interfaces import config_path as interface_config_path
 ```
 
 ---
 
-### 2.2. `cli/system_info_menu.py` — отсутствует `import sys`
+### 2.2. `cli/system_info_menu.py` — Missing `import sys`
 
-**Проблема:** Строка 57:
+**Problem:** Line 57:
 ```python
 section("LoomWG", [
     ("Version", "0.1.0"),
-    ("Python", sys.version.split()[0]),  # ← sys не импортирован
+    ("Python", sys.version.split()[0]),  # ← sys not imported
     ("Executable", sys.executable),
     ...
 ])
 ```
 
-В начале файла есть `import subprocess` и `from pathlib import Path`, но **нет `import sys`**.
+At top of file there is `import subprocess` and `from pathlib import Path`, but **no `import sys`**.
 
-**Исправление:** Добавить после строки 5:
+**Fix:** Add after line 5:
 ```python
 import sys
 ```
 
 ---
 
-### 2.3. `views/qr_display.py` — дубликат файла + пропущенный `show_peer_selection`
+### 2.3. `views/qr_display.py` — File Duplicate + Missing `show_peer_selection`
 
-**Проблема:** Файл содержит **два полных дубликата** (строки 1-30 и 31-61). `show_peer_selection` вызывается на строке 15, но не импортирована.
+**Problem:** File contains **two full duplicates** (lines 1-30 and 31-61). `show_peer_selection` is called on line 15, but not imported.
 
-**Исправление:** Полностью перезаписать файл:
+**Fix:** Completely rewrite file:
 ```python
 """View functions for QR code display."""
 from rich.console import Console
@@ -96,24 +96,24 @@ def show_qr_code() -> None:
 
 ---
 
-### 2.4. `views/log_views.py` — отсутствуют `FirewalldManager` и `confirm`
+### 2.4. `views/log_views.py` — Missing `FirewalldManager` and `confirm`
 
-**Проблема:** 
-- Строка 20: `firewall = FirewalldManager()` — класс не импортирован.
-- Строка 88: `if confirm("Clear all logs?"):` — функция не импортирована.
+**Problem:**
+- Line 20: `firewall = FirewalldManager()` — class not imported.
+- Line 88: `if confirm("Clear all logs?"):` — function not imported.
 
-Текущий импорт (строка 9):
+Current import (line 9):
 ```python
 from ..cli.common import clear_screen, section_banner, pause
 ```
 
-**Исправление:** Добавить в начало файла:
+**Fix:** Add at top of file:
 ```python
 from ..firewall.firewalld import FirewalldManager
 from ..cli.common import clear_screen, section_banner, pause, confirm
 ```
 
-**Полный заголовок файла:**
+**Full file header:**
 ```python
 """Auto-extracted from cli/__init__.py"""
 import re
@@ -133,84 +133,84 @@ console = Console()
 
 ---
 
-### 2.5. `cli/logs_menu.py` — дубликат импорта `show_header_info`
+### 2.5. `cli/logs_menu.py` — Duplicate Import `show_header_info`
 
-**Проблема:** `show_header_info` импортирован дважды — строка 6 и строка 9.
+**Problem:** `show_header_info` is imported twice — line 6 and line 9.
 
-**Исправление:** Убрать строку 6 (оставить только строку 9):
+**Fix:** Remove line 6 (keep only line 9):
 ```python
-# Удалить: from ..cli.common import show_header_info
+# Remove: from ..cli.common import show_header_info
 ```
 
 ---
 
-### 2.6. `commands/key_rotation.py` — дубликат `import re`
+### 2.6. `commands/key_rotation.py` — Duplicate `import re`
 
-**Проблема:** `import re` на строках 3 и 16.
+**Problem:** `import re` on lines 3 and 16.
 
-**Исправление:** Удалить один из них (строка 3).
+**Fix:** Remove one of them (line 3).
 
 ---
 
-### 2.7. `commands/peer_lifecycle.py` — `SystemDetector` не импортирован
+### 2.7. `commands/peer_lifecycle.py` — `SystemDetector` Not Imported
 
-**Проблема:** Строка 248:
+**Problem:** Line 248:
 ```python
 server_endpoint=SystemDetector().detect().public_ip or "YOUR_SERVER_IP",
 ```
-`SystemDetector` не импортирован в файле.
+`SystemDetector` is not imported in the file.
 
-**Исправление:** Добавить в начало файла (строка 19):
+**Fix:** Add at top of file (line 19):
 ```python
 from ..system.info import SystemDetector
 ```
 
 ---
 
-## 3. Сводная таблица
+## 3. Summary Table
 
-| # | Файл | Проблема | Исправление |
-|---|------|----------|-------------|
-| 1 | `cli/common.py:344` | `interface_config_path` не импортирован в `delete_interface()` | Добавить `from ..wireguard.interfaces import config_path as interface_config_path` |
-| 2 | `cli/system_info_menu.py:57` | `sys` не импортирован | Добавить `import sys` |
-| 3 | `views/qr_display.py` | `show_peer_selection` не импортирована + дубликат файла | Добавить импорт + удалить дубликат |
-| 4 | `views/log_views.py` | `FirewalldManager` и `confirm` не импортированы | Добавить оба импорта |
-| 5 | `cli/logs_menu.py` | `show_header_info` импортирован дважды | Убрать дубликат |
-| 6 | `commands/key_rotation.py` | `import re` на строках 3 и 16 | Удалить один |
-| 7 | `commands/peer_lifecycle.py:248` | `SystemDetector` не импортирован | Добавить `from ..system.info import SystemDetector` |
-
----
-
-## 4. Порядок исправления
-
-### Шаг 1: Исправить `cli/common.py`
-- Добавить `interface_config_path` в `delete_interface()`
-
-### Шаг 2: Исправить `cli/system_info_menu.py`
-- Добавить `import sys`
-
-### Шаг 3: Исправить `views/qr_display.py`
-- Полный редизайн (удалить дубликат, добавить импорт)
-
-### Шаг 4: Исправить `views/log_views.py`
-- Добавить `FirewalldManager` и `confirm`
-
-### Шаг 5: Убрать дубликаты
-- `cli/logs_menu.py:6` — удалить `from ..cli.common import show_header_info`
-- `commands/key_rotation.py:3` — удалить `import re`
-- `commands/peer_lifecycle.py` — добавить `SystemDetector`
-
-### Шаг 6: `pytest`
-Убедиться что 58/58 проходят.
+| # | File | Problem | Fix |
+|---|------|---------|-----|
+| 1 | `cli/common.py:344` | `interface_config_path` not imported in `delete_interface()` | Add `from ..wireguard.interfaces import config_path as interface_config_path` |
+| 2 | `cli/system_info_menu.py:57` | `sys` not imported | Add `import sys` |
+| 3 | `views/qr_display.py` | `show_peer_selection` not imported + file duplicate | Add import + remove duplicate |
+| 4 | `views/log_views.py` | `FirewalldManager` and `confirm` not imported | Add both imports |
+| 5 | `cli/logs_menu.py` | `show_header_info` imported twice | Remove duplicate |
+| 6 | `commands/key_rotation.py` | `import re` on lines 3 and 16 | Remove one |
+| 7 | `commands/peer_lifecycle.py:248` | `SystemDetector` not imported | Add `from ..system.info import SystemDetector` |
 
 ---
 
-## 5. Критерии приёмки
+## 4. Fix Order
 
-1. ✅ `Delete selected interface` (выбор `di` в manage_interfaces) — не падает на NameError
-2. ✅ `System Information` (выбор 5 в main menu) — не падает на NameError sys
-3. ✅ `Show QR code` (выбор 11 в peers_menu) — не падает на NameError show_peer_selection
-4. ✅ `Firewall status` (выбор 1 в diagnostics_menu) — не падает на NameError FirewalldManager
-5. ✅ `Clear logs` (выбор 2 в logs_menu) — не падает на NameError confirm
-6. ✅ `Rotate peer keys` — не падает на NameError SystemDetector
+### Step 1: Fix `cli/common.py`
+- Add `interface_config_path` to `delete_interface()`
+
+### Step 2: Fix `cli/system_info_menu.py`
+- Add `import sys`
+
+### Step 3: Fix `views/qr_display.py`
+- Complete redesign (remove duplicate, add import)
+
+### Step 4: Fix `views/log_views.py`
+- Add `FirewalldManager` and `confirm`
+
+### Step 5: Remove duplicates
+- `cli/logs_menu.py:6` — remove `from ..cli.common import show_header_info`
+- `commands/key_rotation.py:3` — remove `import re`
+- `commands/peer_lifecycle.py` — add `SystemDetector`
+
+### Step 6: `pytest`
+Ensure 58/58 pass.
+
+---
+
+## 5. Acceptance Criteria
+
+1. ✅ `Delete selected interface` (select `di` in manage_interfaces) — does not crash on NameError
+2. ✅ `System Information` (select 5 in main menu) — does not crash on NameError sys
+3. ✅ `Show QR code` (select 11 in peers_menu) — does not crash on NameError show_peer_selection
+4. ✅ `Firewall status` (select 1 in diagnostics_menu) — does not crash on NameError FirewalldManager
+5. ✅ `Clear logs` (select 2 in logs_menu) — does not crash on NameError confirm
+6. ✅ `Rotate peer keys` — does not crash on NameError SystemDetector
 7. ✅ `pytest` — 58/58 passed

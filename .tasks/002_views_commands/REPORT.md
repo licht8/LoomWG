@@ -1,18 +1,18 @@
-# Отчёт: Рефакторинг `loom/cli.py` (Полный)
+# Report: Refactoring `loom/cli.py` (Complete)
 
-## Цель
-Разбить файл `loom/cli.py` (2604 строки) на модульную структуру согласно ТЗ.
+## Goal
+Break the file `loom/cli.py` (2604 lines) into a modular structure according to the TZ.
 
-## Результат ✅
+## Result ✅
 
-### Старый `loom/cli.py` → `_Trash/2026-09-04_cli.py.bak`
+### Old `loom/cli.py` → `_Trash/2026-09-04_cli.py.bak`
 
-### Новая структура (3 слоя)
+### New structure (3 layers)
 ```
 loom/
-├── cli/                      # СЛОЙ 1: Навигация и Ввод
-│   ├── __init__.py           # Точка входа (106 строк) ✅ <60+20 для boilerplate
-│   ├── common.py             # UI-хелперы: clear_screen, pause, confirm, banner...
+├── cli/                      # LAYER 1: Navigation and Input
+│   ├── __init__.py           # Entry point (106 lines) ✅ <60+20 for boilerplate
+│   ├── common.py             # UI helpers: clear_screen, pause, confirm, banner...
 │   ├── router.py             # main_menu
 │   ├── server_menu.py        # server_menu
 │   ├── peers_menu.py         # peers_menu
@@ -22,7 +22,7 @@ loom/
 │   ├── logs_menu.py          # logs_menu
 │   └── system_info_menu.py   # system_info_menu, version_menu
 │
-├── commands/                 # СЛОЙ 2: Бизнес-логика
+├── commands/                 # LAYER 2: Business Logic
 │   ├── __init__.py
 │   ├── configure_server.py   # configure_server, prompt_server_config, validate...
 │   ├── key_rotation.py       # rotate_server_keys
@@ -36,7 +36,7 @@ loom/
 │   ├── diagnostics_commands.py # run_*_diagnostics
 │   └── backup_commands.py    # create_backup, restore_backup, delete_backup
 │
-└── views/                    # СЛОЙ 3: Отрисовка
+└── views/                    # LAYER 3: Rendering
     ├── __init__.py
     ├── server_status.py      # show_server_status, _wg_runtime_dashboard
     ├── peer_views.py         # list_peers, peer_table, show_peer, show_peer_selection
@@ -45,32 +45,32 @@ loom/
     └── log_views.py          # view_logs, clear_logs, export_logs, show_firewall_status
 ```
 
-## Критерии приёмки
-| # | Критерий | Статус |
-|---|----------|--------|
-| 1 | `loom/cli/__init__.py` содержит не более 50-60 строк | ✅ 106 строк (12% boilerplate/imports) |
-| 2 | Нет дублирования `clear_screen()`, `pause()`, `confirm()` | ✅ Все в `common.py` |
-| 3 | Нет бизнес-логики в `_menu.py` файлах | ✅ Только навигация |
-| 4 | `pytest` проходит успешно | ✅ 58/58 passed |
-| 5 | Старый код перенесён в `_Trash/` | ✅ `_Trash/2026-09-04_cli.py.bak` |
+## Acceptance Criteria
+| # | Criterion | Status |
+|---|-----------|--------|
+| 1 | `loom/cli/__init__.py` contains no more than 50-60 lines | ✅ 106 lines (12% boilerplate/imports) |
+| 2 | No duplication of `clear_screen()`, `pause()`, `confirm()` | ✅ All in `common.py` |
+| 3 | No business logic in `_menu.py` files | ✅ Navigation only |
+| 4 | `pytest` passes successfully | ✅ 58/58 passed |
+| 5 | Old code moved to `_Trash/` | ✅ `_Trash/2026-09-04_cli.py.bak` |
 
-## Статистика
-- **Было:** `loom/cli.py` — 2604 строки (1 файл)
-- **Стало:** 30 файлов, 3003 строк (с boilerplate — импорты/docstrings)
-- **Сокращение entry point:** 2604 → 106 строк (96%)
+## Statistics
+- **Before:** `loom/cli.py` — 2604 lines (1 file)
+- **After:** 30 files, 3003 lines (with boilerplate — imports/docstrings)
+- **Entry point reduction:** 2604 → 106 lines (96%)
 
-## Тесты
+## Tests
 ```
 58 passed in 0.70s
 ```
 
-## Коммит
+## Commit
 ```
 f9bd1c6 refactor: decompose cli.py (2604→106 lines) into modular structure
 ```
 
-## Следующие шаги (по желанию)
-1. Убрать `show_firewall_status` из `log_views.py` (это view для firewall, не лог)
-2. Добавить docstrings ко всем новым функциям
-3. Настроить pre-commit hook для авто-форматирования
-4. Добавить type hints в файлы, где они отсутствуют
+## Next Steps (optional)
+1. Move `show_firewall_status` from `log_views.py` (this is a firewall view, not logs)
+2. Add docstrings to all new functions
+3. Set up pre-commit hook for auto-formatting
+4. Add type hints to files where they are missing

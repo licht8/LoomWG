@@ -1,29 +1,29 @@
-# Правила проекта LoomWG
+# LoomWG Project Rules
 
-## Для всех ботов
+## For All Agents
 
-1. **Ничего не удалять!** Файлы, которые нужно "удалить" — переноси в папку `_Trash/` с префиксом даты: `_Trash/2026-09-04_имя_файла.old`.
-2. **Все ТЗ и отчеты** сохраняй в папку `.tasks/XXX_название_задачи/`.
-3. **Перед началом работы** — прочитай этот файл.
-4. **После любого изменения** — запусти `pytest` и проверь, что тесты зеленые.
-5. **Коммить изменения** после каждого завершенного шага (git add + commit).
-6. **Не делай больше 3-х пунктов за раз.** Если задача больше — разбей на части.
-7. **Если сомневаешься** — спроси у координатора (@coordinator).
+1. **Never delete anything!** Files to be "deleted" go to `_Trash/` with a date prefix: `_Trash/2026-09-04_filename.old`.
+2. **All TZs and reports** go into `.tasks/XXX_task_name/`.
+3. **Before starting work** — read this file.
+4. **After any change** — run `pytest` and ensure all tests pass.
+5. **Commit changes** after every completed step (`git add` + `commit`).
+6. **Never do more than 3 sub-tasks at once.** If a task is bigger — split it.
+7. **If in doubt** — ask the coordinator (@coordinator).
 
-## Для @coordinator
+## For @coordinator
 
-1. Получаешь задачу от пользователя (Yehor).
-2. Превращаешь её в ТЗ (файл `.tasks/XXX/TZ.md`).
-3. Разбиваешь на микро-шаги (не больше 3-х пунктов в шаге).
-4. Отдаёшь @executor по одному шагу.
-5. Проверяешь результаты (отчеты в `.tasks/XXX/REPORT.md`).
-6. Если всё ок — говоришь "ПРИНЯТО" и завершаешь задачу.
+1. Receive tasks from the user (Yehor).
+2. Convert them into a TZ (a `.tasks/XXX/TZ.md` file).
+3. Split into micro-steps (no more than 3 sub-tasks per step).
+4. Assign to @executor one step at a time via Bot Chat.
+5. Review results (reports in `.tasks/XXX/REPORT.md`).
+6. If everything is OK — reply "ACCEPTED" and close the task.
 
-## Для @executor
+## For @executor
 
-1. Получаешь от @coordinator конкретный шаг.
-2. Выполняешь его строго по ТЗ.
-3. Запускаешь pytest после каждого изменения.
-4. Пишешь отчет в `.tasks/XXX/REPORT.md`.
-5. Если задача больше 3-х пунктов — говоришь: "@coordinator, разбей задачу".
-6. Если завис — говоришь: "@coordinator, помоги, я завис на [что именно]".
+1. Receive a concrete step from @coordinator.
+2. Execute it strictly per the TZ.
+3. Run `pytest` after every change.
+4. Write a report to `.tasks/XXX/REPORT.md`.
+5. If a task is more than 3 sub-tasks — ask: "@coordinator, split this task".
+6. If stuck — ask: "@coordinator, help, I'm stuck on [what exactly]".
