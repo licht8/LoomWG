@@ -60,3 +60,10 @@ backups/
 /data/clients/
 /data/qr_codes/
 /data/interfaces/
+
+# Local dev scratch
+/tmp/
+.rules/
+.skills/
+.tasks/
+_Trash/
