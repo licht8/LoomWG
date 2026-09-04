@@ -1,4 +1,6 @@
 """System diagnostics."""
+from rich.console import Console
+console = Console()
 from dataclasses import dataclass
 from enum import Enum
 

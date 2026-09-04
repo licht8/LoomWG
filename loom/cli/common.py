@@ -225,7 +225,6 @@ def prompt_for_qr_code(peer_name: str | None = None) -> bool:
 
 def check_root() -> bool:
     """Check if running as root."""
-    from ..system.info import SystemDetector
     if not SystemDetector().detect().is_root:
         console.print(
             Panel(

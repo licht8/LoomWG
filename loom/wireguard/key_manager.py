@@ -1,4 +1,6 @@
 """WireGuard key management."""
+from rich.console import Console
+console = Console()
 import subprocess
 from dataclasses import dataclass
 
@@ -27,7 +29,8 @@ class KeyManager:
             )
 
             return result.stdout.strip()
-        except Exception as e:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             raise RuntimeError(f"Failed to generate private key: {e}")
 
     @staticmethod
@@ -44,7 +47,8 @@ class KeyManager:
             )
 
             return result.stdout.strip()
-        except Exception as e:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             raise RuntimeError(f"Failed to generate public key: {e}")
 
     @staticmethod
@@ -60,7 +64,8 @@ class KeyManager:
             )
 
             return result.stdout.strip()
-        except Exception as e:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             raise RuntimeError(f"Failed to generate preshared key: {e}")
 
     @classmethod
@@ -87,5 +92,6 @@ class KeyManager:
 
             decoded = base64.b64decode(key)
             return len(decoded) == 32
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             return False

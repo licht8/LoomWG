@@ -1,4 +1,4 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Configure WireGuard server — create, validate, write config."""
 import re
 import subprocess
 from ipaddress import ip_network

@@ -149,7 +149,8 @@ def revoke_peer() -> None:
             logger = LoomLogger()
             logger.log_peer_revoked(name, peer.public_key)
             console.print(f"[green]✓ Peer '{name}' revoked[/green]")
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             if config_path.exists() and original_config is not None:
                 config_path.write_text(original_config, encoding="utf-8")
                 config_path.chmod(0o600)
@@ -261,6 +262,7 @@ def rotate_peer_keys() -> None:
             logger.log_peer_key_rotated(name, original_peer.public_key, keypair.public_key)
             console.print(f"[green]✓ Peer '{name}' key rotation completed[/green]")
         except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             if config_path.exists() and original_config is not None:
                 config_path.write_text(original_config, encoding="utf-8")
                 config_path.chmod(0o600)
@@ -269,7 +271,8 @@ def rotate_peer_keys() -> None:
                 try:
                     manager.remove_peer_from_interface(interface, keypair.public_key)
                     manager.add_peer_to_interface(interface, original_peer.public_key, original_peer.ipv4_address, client_ipv6=original_peer.ipv6_address)
-                except Exception:
+                except Exception as exc:
+                    console.print(f"[red]Error: {exc}[/red]")
                     pass
             console.print(f"[red]✗ Rotation failed and the prior state was restored: {exc}[/red]")
 

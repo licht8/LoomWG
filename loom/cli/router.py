@@ -30,6 +30,7 @@ def main_menu() -> None:
         menu_option(3, "Firewall", "Manage firewalld access")
         print()
         menu_option(4, "Diagnostics", "Run health and troubleshooting checks")
+
         menu_option(5, "Backup & Restore", "Protect or recover LoomWG data")
         menu_option(6, "Logs", "View and export application activity")
         menu_option(7, "System Info", "Read-only server and VPN overview")

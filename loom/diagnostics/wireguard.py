@@ -1,4 +1,6 @@
 """WireGuard diagnostics."""
+from rich.console import Console
+console = Console()
 import subprocess
 from dataclasses import dataclass
 from enum import Enum

@@ -1,4 +1,6 @@
 """WireGuard peer management."""
+from rich.console import Console
+console = Console()
 import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -77,7 +79,8 @@ class PeerManager:
             for name, peer_data in data.items():
                 # Preserve private key when in-memory use is needed for config export.
                 self.peers[name] = Peer(**peer_data)
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             self.peers = {}
 
     def save(self) -> bool:
@@ -91,7 +94,8 @@ class PeerManager:
             self.db_path.chmod(0o600)
 
             return True
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             return False
 
     def add_peer(self, peer: Peer) -> bool:

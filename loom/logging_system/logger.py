@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """LoomWG logging system."""
 import json
 from datetime import datetime
@@ -56,8 +58,8 @@ class LoomLogger:
 
             # Set secure permissions
             self.current_log.chmod(0o600)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.error("Operation failed: %s", exc)
 
     def info(
         self, message: str, category: str = "general", details: str | None = None
@@ -163,7 +165,8 @@ class LoomLogger:
 
             # Return most recent entries
             return list(reversed(entries[-limit:]))
-        except Exception:
+        except Exception as exc:
+            logger.error("Operation failed: %s", exc)
             return []
 
     def clear_logs(self) -> bool:
@@ -173,7 +176,8 @@ class LoomLogger:
                 log_file.unlink()
 
             return True
-        except Exception:
+        except Exception as exc:
+            logger.error("Operation failed: %s", exc)
             return False
 
     def export_logs(self, export_path: Path) -> bool:
@@ -193,5 +197,6 @@ class LoomLogger:
             export_path.chmod(0o600)
 
             return True
-        except Exception:
+        except Exception as exc:
+            logger.error("Operation failed: %s", exc)
             return False

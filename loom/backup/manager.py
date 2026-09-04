@@ -1,4 +1,6 @@
 """WireGuard backup and restore functionality."""
+from rich.console import Console
+console = Console()
 import json
 import tarfile
 from datetime import datetime
@@ -55,7 +57,8 @@ class BackupManager:
             backup_file.chmod(0o600)
 
             return backup_file
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             return None
 
     def list_backups(self) -> list[tuple[str, datetime]]:
@@ -114,21 +117,19 @@ class BackupManager:
                 if temp_config.exists():
                     # Backup current config
                     if self.config_dir.exists():
-                        import shutil
 
                         shutil.rmtree(self.config_dir)
 
-                    import shutil
 
                     shutil.copytree(temp_config, self.config_dir)
 
                 # Clean up temp directory
-                import shutil
 
                 shutil.rmtree(temp_dir)
 
             return True
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             return False
 
     def delete_backup(self, backup_file: Path) -> bool:
@@ -147,7 +148,8 @@ class BackupManager:
                 metadata_file.unlink()
 
             return True
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             return False
 
     def validate_backup(self, backup_file: Path) -> bool:
@@ -159,7 +161,8 @@ class BackupManager:
                     tar.extractfile(member)
 
             return True
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             return False
 
     @staticmethod

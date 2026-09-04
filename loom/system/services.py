@@ -1,3 +1,4 @@
+import logging
 """System service management."""
 import subprocess
 from dataclasses import dataclass
@@ -11,6 +12,9 @@ class ServiceStatus:
     is_active: bool
     is_enabled: bool
     description: str | None = None
+
+
+logger = logging.getLogger(__name__)
 
 
 class ServiceManager:
@@ -29,7 +33,8 @@ class ServiceManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Service operation failed: %s", exc)
             return False
 
     def stop(self, service: str) -> bool:
@@ -42,7 +47,8 @@ class ServiceManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Service operation failed: %s", exc)
             return False
 
     def restart(self, service: str) -> bool:
@@ -55,7 +61,8 @@ class ServiceManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Service operation failed: %s", exc)
             return False
 
     def reload(self, service: str) -> bool:
@@ -68,7 +75,8 @@ class ServiceManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Service operation failed: %s", exc)
             return False
 
     def enable(self, service: str) -> bool:
@@ -81,7 +89,8 @@ class ServiceManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Service operation failed: %s", exc)
             return False
 
     def disable(self, service: str) -> bool:
@@ -94,7 +103,8 @@ class ServiceManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Service operation failed: %s", exc)
             return False
 
     def is_active(self, service: str) -> bool:
@@ -107,7 +117,8 @@ class ServiceManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Service operation failed: %s", exc)
             return False
 
     def is_enabled(self, service: str) -> bool:
@@ -120,7 +131,8 @@ class ServiceManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Service operation failed: %s", exc)
             return False
 
     def get_status(self, service: str) -> ServiceStatus:

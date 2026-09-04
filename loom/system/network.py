@@ -1,3 +1,4 @@
+import logging
 """Network operations and utilities."""
 import subprocess
 from dataclasses import dataclass
@@ -13,6 +14,9 @@ class NetworkInterface:
     ip_address: str | None
     gateway: str | None
     is_up: bool
+
+
+logger = logging.getLogger(__name__)
 
 
 class NetworkManager:
@@ -44,7 +48,8 @@ class NetworkManager:
                             interfaces.append(iface)
 
             return interfaces
-        except Exception:
+        except Exception as exc:
+            logger.error("Network operation failed: %s", exc)
             return []
 
     def get_default_interface(self) -> str | None:
@@ -67,7 +72,8 @@ class NetworkManager:
                         return parts[4]
 
             return None
-        except Exception:
+        except Exception as exc:
+            logger.error("Network operation failed: %s", exc)
             return None
 
     def get_ipv4_address(self, interface: str) -> str | None:
@@ -90,7 +96,8 @@ class NetworkManager:
                         return parts[1].split("/")[0]
 
             return None
-        except Exception:
+        except Exception as exc:
+            logger.error("Network operation failed: %s", exc)
             return None
 
     def enable_ip_forwarding(self) -> bool:
@@ -103,7 +110,8 @@ class NetworkManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Network operation failed: %s", exc)
             return False
 
     def enable_ipv6_forwarding(self) -> bool:
@@ -116,7 +124,8 @@ class NetworkManager:
             )
 
             return result.returncode == 0
-        except Exception:
+        except Exception as exc:
+            logger.error("Network operation failed: %s", exc)
             return False
 
     def is_ipv4_forwarding_enabled(self) -> bool:
@@ -133,7 +142,8 @@ class NetworkManager:
                 return result.stdout.strip() == "1"
 
             return False
-        except Exception:
+        except Exception as exc:
+            logger.error("Network operation failed: %s", exc)
             return False
 
     def is_ipv6_forwarding_enabled(self) -> bool:
@@ -150,5 +160,6 @@ class NetworkManager:
                 return result.stdout.strip() == "1"
 
             return False
-        except Exception:
+        except Exception as exc:
+            logger.error("Network operation failed: %s", exc)
             return False

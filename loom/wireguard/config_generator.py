@@ -1,4 +1,6 @@
 """Generate WireGuard configuration files."""
+from rich.console import Console
+console = Console()
 from pathlib import Path
 from typing import Optional
 
@@ -116,7 +118,8 @@ class ConfigGenerator:
             config_path.chmod(mode)
 
             return True
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             return False
 
     @staticmethod
@@ -160,7 +163,8 @@ class ConfigGenerator:
 
             config_path.chmod(0o600)
             return True
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             return False
 
     @staticmethod
@@ -277,5 +281,6 @@ class ConfigGenerator:
             backup_path.chmod(0o600)
 
             return backup_path
-        except Exception:
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
             return None
