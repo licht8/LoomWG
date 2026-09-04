@@ -341,14 +341,29 @@ def remove_peer() -> None:
             return
 
         if confirm(f"Remove peer '{name}'? This cannot be undone."):
-            if peer_mgr.remove_peer(name):
-                console.print(f"[green]✓ Peer '{name}' removed[/green]")
+            interface = selected_interface()
+            config_path = interface_config_path(interface)
+            wg_manager = WireGuardManager()
+            generator = ConfigGenerator()
 
+            # 1. Remove from live WireGuard interface
+            runtime_ok = wg_manager.remove_peer_from_interface(interface, peer.public_key) if wg_manager.is_interface_active(interface) else True
+
+            # 2. Remove from wg0.conf file
+            config_ok = generator.remove_peer_from_server_config(config_path, peer.public_key) if config_path.exists() else True
+
+            if not (runtime_ok and config_ok):
+                console.print("[red]✗ Failed to remove peer from live interface or config[/red]")
+                pause()
+                return
+
+            # 3. Remove from database
+            if peer_mgr.remove_peer(name):
                 logger = LoomLogger()
                 logger.log_peer_removed(name)
+                console.print(f"[green]✓ Peer '{name}' removed[/green]")
             else:
-                console.print("[red]✗ Failed to remove peer[/red]")
-
+                console.print("[red]✗ Failed to remove peer from database[/red]")
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
 
