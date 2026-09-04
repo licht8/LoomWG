@@ -1,4 +1,21 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Server status views."""
+import subprocess
+from datetime import datetime
+from pathlib import Path
+
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+from ..wireguard.manager import WireGuardManager
+from ..wireguard.installer import WireGuardInstaller
+from ..wireguard.server_config import ServerConfig
+from ..wireguard.peer_manager import PeerManager
+from ..wireguard.interfaces import config_path as interface_config_path
+from ..cli.common import clear_screen, section_banner, selected_interface
+
+console = Console()
+
 import subprocess
 from datetime import datetime
 
@@ -6,7 +23,7 @@ from rich.console import Console
 from rich.table import Table
 
 from ..wireguard.manager import WireGuardManager
-from ..wireguard.interfaces import config_path as interface_config_path
+from ..wireguard.interfaces import config_path
 
 from ..wireguard.server_config import ServerConfig
 from ..wireguard.peer_manager import PeerManager

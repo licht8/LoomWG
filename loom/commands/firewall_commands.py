@@ -1,9 +1,21 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Firewall commands."""
 import subprocess
+
+from rich.console import Console
+console = Console()
 
 from ..firewall.firewalld import FirewalldManager
 from ..wireguard.server_config import ServerConfig
 from ..wireguard.interfaces import config_path as interface_config_path
+from ..cli.common import selected_interface
+from ..logging_system.logger import LoomLogger
+from ..cli.common import clear_screen, section_banner, pause
+
+import subprocess
+
+from ..firewall.firewalld import FirewalldManager
+from ..wireguard.server_config import ServerConfig
+from ..wireguard.interfaces import config_path
 
 from ..logging_system.logger import LoomLogger
 from ..cli.common import clear_screen, section_banner, pause

@@ -31,14 +31,12 @@ def selected_interface() -> str:
 
 def select_interface() -> None:
     """Select a configured WireGuard interface for subsequent operations."""
-    from ..wireguard.interfaces import configured_interfaces
-    from ..wireguard.interfaces import set_selected_interface as _set_selected
-    from .common import create_interface as _create_interface, pause as _pause, selected_interface as _selected
+    from ..wireguard.interfaces import configured_interfaces, set_selected_interface
 
     interfaces = configured_interfaces()
     console.print("\n[bold]WireGuard Interfaces[/bold]")
     for index, name in enumerate(interfaces, 1):
-        marker = " (selected)" if name == _selected() else ""
+        marker = " (selected)" if name == selected_interface() else ""
         console.print(f"{index}. {name}{marker}")
     console.print(f"{len(interfaces) + 1}. Create Interface")
     console.print(f"{len(interfaces) + 2}. Back")
@@ -48,18 +46,18 @@ def select_interface() -> None:
         index = int(choice)
     except ValueError:
         console.print("[red]Invalid selection.[/red]")
-        _pause()
+        pause()
         return
 
     if 1 <= index <= len(interfaces):
-        _set_selected(interfaces[index - 1])
-        console.print(f"[green]✓ Selected {_selected()}[/green]")
-        _pause()
+        set_selected_interface(interfaces[index - 1])
+        console.print(f"[green]✓ Selected {selected_interface()}[/green]")
+        pause()
     elif index == len(interfaces) + 1:
-        _create_interface()
+        create_interface()
     elif index != len(interfaces) + 2:
         console.print("[red]Invalid selection.[/red]")
-        _pause()
+        pause()
 
 
 def create_interface() -> None:
@@ -274,3 +272,112 @@ def menu_option(
         f"  [purple]{number})[/purple] [bold]{title:<25}[/bold]"
         f"[grey35]{description}[/grey35]{suffix}"
     )
+
+def manage_interfaces() -> None:
+    """Manage interface selection, creation, and deletion."""
+    while True:
+        clear_screen()
+        interfaces = configured_interfaces()
+        console.print(
+            Panel(
+                "[bold white]Manage WireGuard Interfaces[/bold white]\n"
+                "[grey70]Select an interface or manage the available VPN tunnels[/grey70]",
+                border_style="purple",
+                padding=(1, 2),
+            )
+        )
+        console.print()
+        for index, name in enumerate(interfaces, 1):
+            marker = " (selected)" if name == selected_interface() else ""
+            console.print(
+                f"  [purple]{index}.[/purple] "
+                f"[bold]Select {name}[/bold]"
+                f"[green]{marker}[/green]"
+            )
+        console.print()
+        console.print("  [purple]ci[/purple] [bold]Create Interface[/bold]")
+        console.print("  [purple]di[/purple] [bold]Delete selected interface[/bold]")
+        console.print()
+        console.print("  [purple]0.[/purple] Back")
+
+        choice = input("Select option: ").strip()
+
+        if choice.lower() == "ci":
+            create_interface()
+        elif choice.lower() == "di":
+            delete_interface()
+        elif choice == "0":
+            return
+        else:
+            try:
+                index = int(choice)
+            except ValueError:
+                console.print("[red]Invalid selection.[/red]")
+                pause()
+                continue
+
+            if not 1 <= index <= len(interfaces):
+                console.print("[red]Invalid selection.[/red]")
+                pause()
+                continue
+            set_selected_interface(interfaces[index - 1])
+            console.print(f"[green]✓ Selected {selected_interface()}[/green]")
+            pause()
+
+
+def delete_interface() -> None:
+    """Delete a non-default interface and its isolated state after confirmation."""
+    from ..wireguard.manager import WireGuardManager
+    from ..system.services import ServiceManager
+    from ..logging_system.logger import LoomLogger
+
+    interface = selected_interface()
+    if interface == "wg0":
+        console.print("[yellow]The default wg0 interface cannot be deleted here.[/yellow]")
+        pause()
+        return
+
+    path = interface_config_path(interface)
+    if not path.exists():
+        console.print(f"[red]Interface {interface} does not exist.[/red]")
+        pause()
+        return
+
+    console.print(f"[bold red]Delete Interface {interface}[/bold red]")
+    console.print(f"Configuration: {path}")
+    console.print("This removes the interface configuration, peer database, and client configs.")
+    if input(f"Type DELETE {interface} to continue: ").strip() != f"DELETE {interface}":
+        console.print("[yellow]Interface deletion cancelled.[/yellow]")
+        pause()
+        return
+
+    manager = WireGuardManager()
+    service = ServiceManager()
+    if manager.is_interface_active(interface) and not manager.stop(interface):
+        console.print(f"[red]Could not stop {interface}; nothing was deleted.[/red]")
+        pause()
+        return
+    if service.is_enabled(f"wg-quick@{interface}") and not service.disable(f"wg-quick@{interface}"):
+        console.print(f"[red]Could not disable wg-quick@{interface}; nothing was deleted.[/red]")
+        pause()
+        return
+
+    from pathlib import Path
+    project_root = Path(__file__).resolve().parents[2]
+    paths = [
+        path,
+        project_root / "data" / "interfaces" / interface,
+    ]
+    try:
+        import shutil
+        for target in paths:
+            if target.is_dir():
+                shutil.rmtree(target)
+            elif target.exists():
+                target.unlink()
+        set_selected_interface("wg0")
+        LoomLogger().info(f"WireGuard interface '{interface}' deleted", "server")
+        console.print(f"[green]✓ Interface {interface} deleted[/green]")
+    except OSError as exc:
+        console.print(f"[red]Failed to delete interface {interface}: {exc}[/red]")
+    pause()

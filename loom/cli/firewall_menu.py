@@ -1,11 +1,18 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Firewall menu."""
+from rich.console import Console
+console = Console()
+
+from ..views.log_views import show_firewall_status
+from ..commands.firewall_commands import start_firewall, enable_firewall, open_wg_port
+from ..cli.common import show_header_info
+
 from ..firewall.firewalld import FirewalldManager
 from ..wireguard.manager import WireGuardManager
 from ..wireguard.server_config import ServerConfig
-from ..wireguard.interfaces import config_path as interface_config_path
+from ..wireguard.interfaces import config_path
 
 from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, section_banner, menu_option, pause
+from ..cli.common import clear_screen, section_banner, menu_option, pause, show_header_info
 
 def firewall_menu() -> None:
     """Firewall management menu."""

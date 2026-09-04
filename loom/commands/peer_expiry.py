@@ -1,4 +1,17 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Peer expiry management."""
+from datetime import datetime
+from pathlib import Path
+
+from rich.console import Console
+console = Console()
+
+from ..wireguard.peer_manager import PeerManager
+from ..wireguard.client_config import ClientConfigStore
+from ..wireguard.config_generator import ConfigGenerator
+from ..wireguard.interfaces import config_path as interface_config_path
+from ..cli.common import selected_interface
+from ..cli.common import clear_screen, section_banner, pause, confirm
+
 from datetime import datetime
 from pathlib import Path
 

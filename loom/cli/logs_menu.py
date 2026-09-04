@@ -1,6 +1,12 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Logs menu."""
+from rich.console import Console
+console = Console()
+
+from ..views.log_views import view_logs, clear_logs, export_logs
+from ..cli.common import show_header_info
+
 from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, section_banner, menu_option, pause
+from ..cli.common import clear_screen, section_banner, menu_option, pause, show_header_info
 
 def logs_menu() -> None:
     """Logs menu."""

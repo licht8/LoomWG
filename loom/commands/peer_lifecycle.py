@@ -1,7 +1,10 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Peer lifecycle (enable/disable/revoke/rotate/remove)."""
 import os
 import subprocess
 from pathlib import Path
+
+from rich.console import Console
+from rich.panel import Panel
 
 from ..wireguard.manager import WireGuardManager
 from ..wireguard.peer_manager import Peer, PeerManager
@@ -11,9 +14,9 @@ from ..wireguard.client_config import ClientConfigStore
 from ..logging_system.logger import LoomLogger
 from ..wireguard.server_config import ServerConfig
 from ..wireguard.ip_allocator import IPAllocator
-from ..wireguard.interfaces import config_path as interface_config_path
+from ..wireguard.interfaces import config_path
 
-from ..cli.common import clear_screen, section_banner, pause, confirm, selected_interface as selected_wg, display_peer_qr_code, prompt_for_qr_code
+from ..cli.common import clear_screen, section_banner, pause, confirm, selected_interface, display_peer_qr_code, prompt_for_qr_code
 
 def disable_peer() -> None:
     """Disable a peer."""

@@ -1,10 +1,21 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Diagnostics menu."""
+from rich.console import Console
+console = Console()
+
 from ..diagnostics import FirewallDiagnostics, NetworkDiagnostics, SystemDiagnostics, WireGuardDiagnostics
 from ..wireguard.manager import WireGuardManager
 from ..wireguard.server_config import ServerConfig
-from ..wireguard.interfaces import config_path as interface_config_path
+from ..wireguard.interfaces import config_path
 
-from ..cli.common import clear_screen, section_banner, menu_option, pause
+from ..commands.diagnostics_commands import (
+    run_full_diagnostics,
+    run_system_diagnostics,
+    run_network_diagnostics,
+    run_wireguard_diagnostics,
+    run_firewall_diagnostics,
+)
+
+from ..cli.common import clear_screen, section_banner, menu_option, pause, show_header_info
 
 def diagnostics_menu() -> None:
     """Diagnostics menu."""

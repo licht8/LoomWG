@@ -11,9 +11,9 @@ from ..wireguard.client_config import ClientConfigStore
 from ..logging_system.logger import LoomLogger
 from ..wireguard.server_config import ServerConfig
 from ..wireguard.ip_allocator import IPAllocator
-from ..wireguard.interfaces import config_path as interface_config_path
+from ..wireguard.interfaces import config_path
 
-from ..cli.common import clear_screen, section_banner, pause, confirm, selected_interface as selected_wg, prompt_for_qr_code, display_peer_qr_code
+from ..cli.common import clear_screen, section_banner, pause, confirm, selected_interface, prompt_for_qr_code, display_peer_qr_code
 
 def create_peer() -> None:
     """Create a new peer."""

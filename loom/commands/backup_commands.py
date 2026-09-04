@@ -1,4 +1,16 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Backup operations."""
+from pathlib import Path
+import shutil
+
+from rich.console import Console
+console = Console()
+
+from ..backup.manager import BackupManager
+from ..wireguard.manager import WireGuardManager
+from ..system.services import ServiceManager
+from ..logging_system.logger import LoomLogger
+from ..cli.common import clear_screen, section_banner, pause, confirm
+
 from pathlib import Path
 import shutil
 

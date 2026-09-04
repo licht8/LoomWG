@@ -1,11 +1,20 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Server management menu."""
+from rich.console import Console
+console = Console()
+
+from ..views.server_status import show_server_status, show_server_config
+from ..commands.configure_server import configure_server
+from ..commands.lifecycle import remove_wireguard, reinstall_wireguard
+from ..commands.key_rotation import rotate_server_keys
+from ..cli.common import manage_interfaces
+
 from ..wireguard.manager import WireGuardManager
 from ..wireguard.server_config import ServerConfig
-from ..wireguard.interfaces import config_path as interface_config_path
+from ..wireguard.interfaces import config_path
 
 from ..system.services import ServiceManager
 from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, show_header_info, menu_option, pause, confirm, selected_interface as selected_wg
+from ..cli.common import clear_screen, show_header_info, menu_option, pause, confirm, selected_interface
 
 def server_menu() -> None:
     """Server management menu."""

@@ -1,4 +1,17 @@
-"""Auto-extracted from cli/__init__.py"""
+"""System info dashboard."""
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+console = Console()
+
+from ..wireguard.server_config import ServerConfig
+from ..wireguard.interfaces import config_path as interface_config_path
+from ..wireguard.manager import WireGuardManager
+from ..wireguard.peer_manager import PeerManager
+from ..firewall.firewalld import FirewalldManager
+from ..system.network import NetworkManager
+from ..system.services import ServiceManager
+
 import subprocess
 from pathlib import Path
 

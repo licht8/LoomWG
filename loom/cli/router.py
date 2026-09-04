@@ -1,4 +1,7 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Main menu router."""
+from rich.console import Console
+console = Console()
+
 import sys
 
 from ..cli.common import clear_screen, check_root, show_banner, show_header_info, menu_option, pause, selected_interface

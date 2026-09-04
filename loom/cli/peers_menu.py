@@ -1,9 +1,20 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Peers menu."""
+from rich.console import Console
+console = Console()
+
+from ..views.peer_views import list_peers, peer_table, show_peer_selection
+from ..views.qr_display import show_qr_code
+from ..commands.peer_crud import create_peer
+from ..commands.peer_lifecycle import disable_peer, enable_peer, revoke_peer, rotate_peer_keys, remove_peer
+from ..commands.peer_expiry import set_peer_expiry, enforce_expired_peers, download_peer_config
+from ..commands.peer_import import import_server_peers
+from ..cli.common import show_header_info
+
 from ..wireguard.manager import WireGuardManager
 from ..wireguard.peer_manager import PeerManager
 from ..wireguard.client_config import ClientConfigStore
 from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, section_banner, menu_option, pause, selected_interface
+from ..cli.common import clear_screen, section_banner, menu_option, pause, selected_interface, show_header_info
 
 def peers_menu() -> None:
     """Peers management menu."""

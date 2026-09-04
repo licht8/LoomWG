@@ -1,4 +1,19 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Diagnostics commands."""
+import subprocess
+from pathlib import Path
+
+from rich.console import Console
+console = Console()
+
+from ..diagnostics import FirewallDiagnostics, NetworkDiagnostics, SystemDiagnostics, WireGuardDiagnostics
+from ..wireguard.manager import WireGuardManager
+from ..system.network import NetworkManager
+from ..system.info import SystemDetector
+from ..wireguard.server_config import ServerConfig
+from ..wireguard.interfaces import config_path as interface_config_path
+from ..cli.common import selected_interface
+from ..cli.common import clear_screen, section_banner, pause
+
 import subprocess
 from pathlib import Path
 
@@ -7,7 +22,7 @@ from ..wireguard.manager import WireGuardManager
 from ..system.network import NetworkManager
 from ..system.info import SystemDetector
 from ..wireguard.server_config import ServerConfig
-from ..wireguard.interfaces import config_path as interface_config_path
+from ..wireguard.interfaces import config_path
 
 from ..cli.common import selected_interface, clear_screen, section_banner, pause
 

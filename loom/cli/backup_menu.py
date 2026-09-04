@@ -1,7 +1,14 @@
-"""Auto-extracted from cli/__init__.py"""
+"""Backup menu."""
+from rich.console import Console
+console = Console()
+
+from ..commands.backup_commands import create_backup, restore_backup, delete_backup
+from ..views.backup_views import list_backups
+from ..cli.common import show_header_info
+
 from ..backup.manager import BackupManager
 from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, section_banner, menu_option, pause
+from ..cli.common import clear_screen, section_banner, menu_option, pause, show_header_info
 
 def backup_menu() -> None:
     """Backup and restore menu."""
