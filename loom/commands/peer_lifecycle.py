@@ -5,6 +5,7 @@ from pathlib import Path
 
 from rich.console import Console
 from rich.panel import Panel
+console = Console()
 
 from ..wireguard.manager import WireGuardManager
 from ..wireguard.peer_manager import Peer, PeerManager

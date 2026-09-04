@@ -1,7 +1,11 @@
 """Auto-extracted from cli/__init__.py"""
+from pathlib import Path
+
+from rich.console import Console
+console = Console()
+
 import re
 import subprocess
-from pathlib import Path
 
 from ..wireguard.peer_manager import PeerManager
 from ..wireguard.key_manager import KeyManager

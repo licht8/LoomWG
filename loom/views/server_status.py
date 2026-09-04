@@ -12,24 +12,10 @@ from ..wireguard.installer import WireGuardInstaller
 from ..wireguard.server_config import ServerConfig
 from ..wireguard.peer_manager import PeerManager
 from ..wireguard.interfaces import config_path as interface_config_path
-from ..cli.common import clear_screen, section_banner, selected_interface
+from ..cli.common import clear_screen, section_banner, selected_interface, pause
 
 console = Console()
 
-import subprocess
-from datetime import datetime
-
-from rich.console import Console
-from rich.table import Table
-
-from ..wireguard.manager import WireGuardManager
-from ..wireguard.interfaces import config_path
-
-from ..wireguard.server_config import ServerConfig
-from ..wireguard.peer_manager import PeerManager
-from ..cli.common import clear_screen, section_banner, selected_interface
-
-console = Console()
 
 def show_server_status() -> None:
     """Show a runtime-only WireGuard operational dashboard."""

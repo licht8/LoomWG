@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from ..system.info import SystemDetector
-from ..wireguard.interfaces import get_selected_interface, set_selected_interface
+from ..wireguard.interfaces import get_selected_interface, set_selected_interface, configured_interfaces
 
 console = Console()
 
@@ -166,7 +166,11 @@ def pause() -> None:
 def confirm(prompt: str = "Continue?") -> bool:
     """Ask for confirmation."""
     while True:
-        response = input(f"\n{prompt} (y/n): ").strip().lower()
+        try:
+            response = input(f"\n{prompt} (y/n): ").strip().lower()
+        except (UnicodeDecodeError, EOFError, OSError):
+            console.print("[red]Invalid response.[/red]")
+            continue
 
         if response in ("y", "yes"):
             return True
@@ -174,7 +178,7 @@ def confirm(prompt: str = "Continue?") -> bool:
         if response in ("n", "no"):
             return False
 
-        print("Invalid response. Please enter 'y' or 'n'.")
+        console.print("Invalid response. Please enter 'y' or 'n'.")
 
 
 def show_banner() -> None:
