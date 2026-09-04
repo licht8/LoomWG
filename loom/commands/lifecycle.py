@@ -1,11 +1,13 @@
 """Auto-extracted from cli/__init__.py"""
-from ..wireguard.manager import WireGuardManager
-from ..wireguard.installer import WireGuardInstaller
 from ..wireguard.lifecycle import WireGuardLifecycle
 from ..system.services import ServiceManager
 from ..logging_system.logger import LoomLogger
 from ..system.packages import PackageManager
 from ..cli.common import clear_screen, section_banner, pause, confirm
+
+from rich.console import Console
+
+console = Console()
 
 def remove_wireguard() -> None:
     """Remove LoomWG-managed WireGuard state after explicit confirmation."""

@@ -240,11 +240,11 @@ def check_root() -> bool:
 def show_header_info() -> None:
     """Show system header information."""
     from ..system.info import SystemDetector as InfoDetector
-    from ..wireguard.installer import WireGuardInstaller
+    from ..wireguard.manager import WireGuardManager
 
     detector = InfoDetector()
     info = detector.detect()
-    wg_manager = WireGuardInstaller()
+    wg_manager = WireGuardManager()
 
     print("\n" + "=" * 50)
     print(f"Server: {info.hostname}")

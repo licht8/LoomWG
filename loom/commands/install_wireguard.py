@@ -11,9 +11,16 @@ from ..wireguard.server_config import ServerConfig
 from ..wireguard.config_generator import ConfigGenerator
 from ..wireguard.key_manager import KeyManager
 from ..wireguard.interfaces import config_path as interface_config_path
+from ..wireguard.manager import WireGuardManager
 
+from ..firewall.firewalld import FirewalldManager
+from ..system.network import NetworkManager
 from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, section_banner, pause
+from ..cli.common import clear_screen, section_banner, pause, selected_interface, confirm
+
+from rich.console import Console
+
+console = Console()
 
 def install_wireguard() -> None:
     """Install WireGuard and configure the default server."""

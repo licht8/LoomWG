@@ -1,12 +1,20 @@
 """Auto-extracted from cli/__init__.py"""
 import re
+import subprocess
+from ipaddress import ip_network
 from pathlib import Path
 
+from rich.console import Console
+
 from ..wireguard.manager import WireGuardManager
+from ..firewall.firewalld import FirewalldManager
+from ..system.network import NetworkManager
+from ..logging_system.logger import LoomLogger
+
+console = Console()
 from ..wireguard.server_config import ServerConfig
 from ..wireguard.key_manager import KeyManager
 from ..wireguard.config_generator import ConfigGenerator
-from ..wireguard.installer import WireGuardInstaller
 from ..wireguard.interfaces import config_path as interface_config_path
 
 from ..cli.common import selected_interface, clear_screen, section_banner, pause, confirm

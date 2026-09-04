@@ -1,4 +1,5 @@
 """Auto-extracted from cli/__init__.py"""
+import re
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -9,10 +10,19 @@ from ..wireguard.key_manager import KeyManager
 from ..wireguard.config_generator import ConfigGenerator
 from ..wireguard.client_config import ClientConfigStore
 from ..wireguard.peer_manager import PeerManager
-from ..wireguard.installer import WireGuardInstaller
 from ..wireguard.interfaces import config_path as interface_config_path
 
+import re
+
+from ..backup.manager import BackupManager
+from ..commands.configure_server import normalize_wireguard_config
+from ..commands.configure_server import repair_wireguard_config_file
+from ..logging_system.logger import LoomLogger
 from ..cli.common import selected_interface, clear_screen, section_banner, pause, confirm
+
+from rich.console import Console
+
+console = Console()
 
 def rotate_server_keys() -> None:
     """Rotate the server keypair with validation, backup, and rollback protection."""
