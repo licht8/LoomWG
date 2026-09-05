@@ -131,7 +131,7 @@ def import_server_peers() -> None:
                     config_artifact.unlink(missing_ok=True)
                     if qr_artifact is not None:
                         qr_artifact.unlink(missing_ok=True)
-                console.print(f"[red]Could not import '{name}': {exc}[/red]")
+                console.print(f"[red]Could not import '{name}': {exc}[/]")
                 break
 
     # Final result

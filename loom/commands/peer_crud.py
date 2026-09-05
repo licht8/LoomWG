@@ -34,18 +34,18 @@ def create_peer() -> None:
             name = input("Peer name: ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
 
         if not name:
-            console.print("[red]Name cannot be empty[/red]")
+            console.print("[red]Name cannot be empty[/]")
             pause()
             return
 
         if peer_mgr.peer_exists(name):
-            console.print("[red]Peer already exists[/red]")
+            console.print("[red]Peer already exists[/]")
             pause()
             return
 
@@ -54,7 +54,7 @@ def create_peer() -> None:
         config_path = interface_config_path(interface)
 
         if not config_path.exists():
-            console.print("[red]Server not configured yet[/red]")
+            console.print("[red]Server not configured yet[/]")
             pause()
             return
 
@@ -71,7 +71,7 @@ def create_peer() -> None:
         ipv6 = allocator.get_next_ipv6(used_ips)
 
         if not ipv4 or not ipv6:
-            console.print("[red]Could not allocate IP addresses[/red]")
+            console.print("[red]Could not allocate IP addresses[/]")
             pause()
             return
 
@@ -79,7 +79,7 @@ def create_peer() -> None:
         console.print(f"Allocated IPv6: {ipv6}\n")
 
         # Generate keys
-        console.print("[bold]Generating keys...[/bold]")
+        console.print("[bold]Generating keys...[/]")
 
         key_mgr = KeyManager()
         keypair = key_mgr.generate_keypair()
@@ -87,7 +87,7 @@ def create_peer() -> None:
         gen = ConfigGenerator()
         wg_manager = WireGuardManager()
 
-        console.print("[green]✓ Keys generated[/green]\n")
+        console.print("[green]✓ Keys generated[/]\n")
 
         # Create peer
         peer = Peer(
@@ -104,7 +104,7 @@ def create_peer() -> None:
             server_addresses=[config.get_ipv4_server_address(), config.get_ipv6_server_address()],
         )
         if not validation_result.valid:
-            console.print("[red]Peer validation failed before applying the new configuration:[/red]")
+            console.print("[red]Peer validation failed before applying the new configuration:[/]")
             for issue in validation_result.errors:
                 console.print(f"  - {issue}")
             pause()
@@ -122,17 +122,17 @@ def create_peer() -> None:
         runtime_ok = peer_result.success
 
         if not runtime_ok:
-            console.print(f"[red]✗ Failed to add peer to the running WireGuard interface {interface}[/red]")
+            console.print(f"[red]✗ Failed to add peer to the running WireGuard interface {interface}[/]")
             if peer_result.interface_present:
-                console.print(f"[yellow]{interface} is running, but the peer was not accepted.[/yellow]")
+                console.print(f"[yellow]{interface} is running, but the peer was not accepted.[/]")
                 console.print(f"Return code: {peer_result.return_code}")
                 console.print(f"stdout: {peer_result.stdout or '<empty>'}")
                 console.print(f"stderr: {peer_result.stderr or '<empty>'}")
             elif peer_result.interface_error:
-                console.print("[yellow]WireGuard runtime inspection failed.[/yellow]")
+                console.print("[yellow]WireGuard runtime inspection failed.[/]")
                 console.print(f"stderr: {peer_result.stderr or '<empty>'}")
             else:
-                console.print(f"[yellow]{interface} is not present in the WireGuard runtime.[/yellow]")
+                console.print(f"[yellow]{interface} is not present in the WireGuard runtime.[/]")
             logger.error(
                 "Peer not marked as created because runtime registration failed",
                 "peer",
@@ -142,7 +142,7 @@ def create_peer() -> None:
             return
 
         if not peer_mgr.add_peer(peer):
-            console.print("[red]✗ Failed to save peer after successful runtime registration[/red]")
+            console.print("[red]✗ Failed to save peer after successful runtime registration[/]")
             logger.error(
                 "Peer runtime registration succeeded but database save failed",
                 "peer",
@@ -151,7 +151,7 @@ def create_peer() -> None:
             pause()
             return
 
-        console.print(f"[green]✓ Peer '{name}' created[/green]")
+        console.print(f"[green]✓ Peer '{name}' created[/]")
 
         server_config_path = interface_config_path(interface)
         gen.append_peer_to_server_config(
@@ -176,11 +176,11 @@ def create_peer() -> None:
         config_path = store.save_peer_config(name, peer_conf)
         qr_path = store.save_qr_code(name, peer_conf)
 
-        console.print(f"[green]✓ Client config saved to {config_path}[/green]")
+        console.print(f"[green]✓ Client config saved to {config_path}[/]")
         if qr_path:
-            console.print(f"[green]✓ QR code saved to {qr_path}[/green]")
+            console.print(f"[green]✓ QR code saved to {qr_path}[/]")
         else:
-            console.print("[yellow]Warning: QR image generation is unavailable; install qrcode to save PNG assets.[/yellow]")
+            console.print("[yellow]Warning: QR image generation is unavailable; install qrcode to save PNG assets.[/]")
 
         if prompt_for_qr_code(name):
             display_peer_qr_code(name, peer_conf)
@@ -188,7 +188,7 @@ def create_peer() -> None:
         logger.log_peer_created(name, ipv4, ipv6)
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 

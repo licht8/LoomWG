@@ -2,6 +2,7 @@
 from rich.console import Console
 console = Console()
 
+from ..cli.common import THEME, show_banner
 from ..views.peer_views import list_peers, peer_table, show_peer_selection, show_peer
 from ..views.qr_display import show_qr_code
 from ..commands.peer_crud import create_peer
@@ -16,14 +17,15 @@ from ..wireguard.client_config import ClientConfigStore
 from ..logging_system.logger import LoomLogger
 from ..cli.common import clear_screen, section_banner, menu_option, pause, selected_interface, show_header_info
 
+
 def peers_menu() -> None:
     """Peers management menu."""
     while True:
-        clear_screen()
+        show_banner()
         enforce_expired_peers()
         show_header_info()
 
-        print(f"Peers Menu (selected: {selected_interface()})\n")
+        section_banner("Peers Menu", f"Selected: {selected_interface()}")
         menu_option(1, "Create peer", "Add a new VPN client")
         menu_option(2, "Remove peer", "Delete a VPN client")
         print()
@@ -40,15 +42,15 @@ def peers_menu() -> None:
         menu_option(10, "Import peers", "Add peers from the selected interface configuration")
         menu_option(11, "Show QR code", "Display a saved peer config as a terminal QR code")
         print()
-        print("  0) Back\n")
+        menu_option(0, "Back")
 
+        console.print()
         try:
             choice = input("Select option: ").strip()
-        except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+        except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+            console.print(f"[{THEME['ERROR']}]Input interrupted.[/]")
             pause()
             return
-
 
         if choice == "1":
             create_peer()
@@ -75,9 +77,7 @@ def peers_menu() -> None:
         elif choice == "0":
             break
         else:
-            print("Invalid option.")
+            console.print(f"[{THEME['WARNING']}]Invalid option.[/{THEME['WARNING']}]")
             pause()
-
-
 
 

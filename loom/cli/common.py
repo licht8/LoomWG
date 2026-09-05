@@ -13,6 +13,61 @@ from ..wireguard.interfaces import get_selected_interface, set_selected_interfac
 
 console = Console()
 
+# ─── Purple/Lavender Theme ───────────────────────────────────────
+THEME = {
+    "PRIMARY": "#7c3aed",        # Deep purple
+    "SECONDARY": "#a78bfa",      # Medium purple
+    "ACCENT": "#c4b5fd",         # Lavender
+    "MUTED": "#8b7cf6",          # Purple gray
+    "SUCCESS": "#34d399",        # Soft green
+    "ERROR": "#f87171",          # Soft red
+    "WARNING": "#fbbf24",        # Soft amber
+    "INFO": "#67e8f9",           # Soft cyan
+    "TEXT": "#ffffff",           # White
+    "DIM": "#a78bfa",            # Purple muted
+}
+
+
+def t(color: str, text: str, bold: bool = False) -> str:
+    """Format text with theme color."""
+    bold_str = "bold " if bold else ""
+    return f"[{bold_str}{color}]{text}[/{bold_str}{color}]"
+
+
+def primary_text(text: str, bold: bool = False):
+    """Purple primary heading text."""
+    return t("PRIMARY", text, bold)
+
+
+def secondary_text(text: str):
+    """Medium purple secondary text."""
+    return t("SECONDARY", text)
+
+
+def success_text(text: str):
+    """Soft green success text."""
+    return t("SUCCESS", text)
+
+
+def error_text(text: str):
+    """Soft red error text."""
+    return t("ERROR", text)
+
+
+def warning_text(text: str):
+    """Soft amber warning text."""
+    return t("WARNING", text)
+
+
+def info_text(text: str):
+    """Soft cyan info text."""
+    return t("INFO", text)
+
+
+def muted_text(text: str):
+    """Purple muted secondary text."""
+    return t("DIM", text)
+
 __all__ = [
     "clear_screen",
     "pause",
@@ -37,7 +92,7 @@ def select_interface() -> None:
     from ..wireguard.interfaces import configured_interfaces, set_selected_interface
 
     interfaces = configured_interfaces()
-    console.print("\n[bold]WireGuard Interfaces[/bold]")
+    console.print("\n[bold]WireGuard Interfaces[/]")
     for index, name in enumerate(interfaces, 1):
         marker = " (selected)" if name == selected_interface() else ""
         console.print(f"{index}. {name}{marker}")
@@ -45,26 +100,27 @@ def select_interface() -> None:
     console.print(f"{len(interfaces) + 2}. Back")
 
     try:
-        choice = input("Select interface: ").strip()
-    except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+        console.print("[bold #7c3aed]Select interface:[/] ", end="")
+        choice = input().strip()
+    except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+        console.print("[red]Input interrupted.[/]")
         return
 
     try:
         index = int(choice)
     except ValueError:
-        console.print("[red]Invalid selection.[/red]")
+        console.print("[red]Invalid selection.[/]")
         pause()
         return
 
     if 1 <= index <= len(interfaces):
         set_selected_interface(interfaces[index - 1])
-        console.print(f"[green]✓ Selected {selected_interface()}[/green]")
+        console.print(f"[green]✓ Selected {selected_interface()}[/]")
         pause()
     elif index == len(interfaces) + 1:
         create_interface()
     elif index != len(interfaces) + 2:
-        console.print("[red]Invalid selection.[/red]")
+        console.print("[red]Invalid selection.[/]")
         pause()
 
 
@@ -84,18 +140,18 @@ def create_interface() -> None:
 
     try:
         name = input("Interface name: ").strip()
-    except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+    except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+        console.print("[red]Input interrupted.[/]")
         pause()
         return
 
     if not validate_interface_name(name) or name == "wg0":
-        console.print("[red]Invalid or duplicate interface name.[/red]")
+        console.print("[red]Invalid or duplicate interface name.[/]")
         pause()
         return
     path = interface_config_path(name)
     if path.exists():
-        console.print("[red]Interface already exists.[/red]")
+        console.print("[red]Interface already exists.[/]")
         pause()
         return
 
@@ -111,21 +167,21 @@ def create_interface() -> None:
     console.print("[dim]Press Enter to accept the value in brackets.[/dim]")
     try:
         port_text = input(f"Listening UDP port [{defaults.listen_port}]: ").strip()
-    except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+    except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+        console.print("[red]Input interrupted.[/]")
         pause()
         return None
     try:
         ipv4_input = input(f"VPN IPv4 network [{defaults.ipv4_network}]: ").strip()
-    except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+    except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+        console.print("[red]Input interrupted.[/]")
         pause()
         return None
     ipv4 = ipv4_input or defaults.ipv4_network
     try:
         ipv6_input = input(f"VPN IPv6 network [{defaults.ipv6_network}]: ").strip()
-    except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+    except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+        console.print("[red]Input interrupted.[/]")
         pause()
         return None
     ipv6 = ipv6_input or defaults.ipv6_network
@@ -154,7 +210,7 @@ def create_interface() -> None:
             if candidate.get_ipv6_network().overlaps(existing_cfg.get_ipv6_network()):
                 errors.append(f"IPv6 network overlaps interface {existing}")
         if errors:
-            console.print("[red]Interface configuration invalid:[/red]")
+            console.print("[red]Interface configuration invalid:[/]")
             for error in errors:
                 console.print(f"  - {error}")
             pause()
@@ -169,9 +225,9 @@ def create_interface() -> None:
         if not ConfigGenerator.write_config(path, content):
             raise RuntimeError("Failed to write interface configuration")
         set_selected_interface(name)
-        console.print(f"[green]✓ Interface {name} created and selected[/green]")
+        console.print(f"[green]✓ Interface {name} created and selected[/]")
     except (RuntimeError, ValueError) as exc:
-        console.print(f"[red]✗ Failed to create interface: {exc}[/red]")
+        console.print(f"[red]✗ Failed to create interface: {exc}[/]")
     pause()
 
 
@@ -182,21 +238,24 @@ def clear_screen() -> None:
 
 def section_banner(title: str, subtitle: str | None = None) -> None:
     """Display a consistent purple banner for a CLI section."""
-    clear_screen()
+    # NOTE: We do NOT call clear_screen() here — the banner drawn by
+    # show_banner() must remain visible on screen.  Each menu file is
+    # responsible for clearing before entering its loop.
     
-    panel_title = Text(title, style="bold cyan")
+    panel_title = Text(title, style=f"bold {THEME['PRIMARY']}")
     if subtitle:
         panel_title.append("\n")
-        panel_title.append(subtitle, style="dim")
+        panel_title.append(subtitle, style=f"dim {THEME['DIM']}")
     
-    console.print(Panel(panel_title, border_style="blue", padding=(1, 2)))
+    console.print(Panel(panel_title, border_style=THEME["PRIMARY"], padding=(1, 2)))
+    console.print()
 
 
 def pause() -> None:
     """Pause and wait for user input."""
     try:
         input("\nPress Enter to continue...")
-    except (EOFError, KeyboardInterrupt, OSError):
+    except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
         pass
 
 
@@ -207,7 +266,7 @@ def confirm(prompt: str = "Continue?") -> bool:
         try:
             response = input(f"\n{prompt} (y/n): ").strip().lower()
         except (UnicodeDecodeError, EOFError, OSError):
-            console.print("[red]Invalid response.[/red]")
+            console.print("[red]Invalid response.[/]")
             continue
 
         if response in ("y", "yes"):
@@ -220,20 +279,34 @@ def confirm(prompt: str = "Continue?") -> bool:
 
 
 def show_banner() -> None:
-    """Display LoomWG banner."""
+    """Display LoomWG banner — no panel, no rule, raw ASCII art."""
     clear_screen()
 
     banner = """
-╔═══════════════════════════════════════════════╗
-║                  LoomWG                        ║
+╔══════════════════════════════════════════════╗
+║                  LoomWG                       ║
 ║         WireGuard Administration Tool          ║
 ║                                                ║
-║            For Linux VPS/Servers               ║
-╚═══════════════════════════════════════════════╝
-"""
-
-    console.print(banner)
-    console.print(Rule(style="blue"))
+║            For Linux VPS/Servers              ║
+╚══════════════════════════════════════════════╝
+    """
+    
+    # Color with purple gradient
+    banner_lines = banner.strip().split("\n")
+    colored_lines = []
+    for i, line in enumerate(banner_lines):
+        t = i / max(len(banner_lines) - 1, 1)
+        r = int(0xc4 * (1 - t) + 0x7c * t)
+        g = int(0xb5 * (1 - t) + 0x6e * t)
+        b = int(0xfd * (1 - t) + 0xed * t)
+        color_code = f"#{r:02x}{g:02x}{b:02x}"
+        colored_lines.append(f"[{color_code}]{line}[/{color_code}]")
+    
+    banner_colored = "\n".join(colored_lines)
+    
+    # Print banner directly — NO Panel, NO Rule
+    console.print(banner_colored)
+    console.print()
 
 
 
@@ -243,9 +316,9 @@ def display_peer_qr_code(peer_name: str, config_content: str) -> None:
     from ..wireguard.client_config import ClientConfigStore
     qr_text = ClientConfigStore.render_qr_ansi(config_content)
     if qr_text is None:
-        console.print("[yellow]Warning: QR generation is unavailable because qrencode is not installed.[/yellow]")
+        console.print("[yellow]Warning: QR generation is unavailable because qrencode is not installed.[/]")
         return
-    console.print(f"\n[bold]QR code for {peer_name}[/bold]\n")
+    console.print(f"\n[bold]QR code for {peer_name}[/]\n")
     print(qr_text)
 
 
@@ -257,8 +330,8 @@ def prompt_for_qr_code(peer_name: str | None = None) -> bool:
     while True:
         try:
             response = input(prompt).strip().lower()
-        except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+        except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+            console.print("[red]Input interrupted.[/]")
             return False
 
         if response in ("", "y", "yes"):
@@ -272,10 +345,10 @@ def check_root() -> bool:
     if not SystemDetector().detect().is_root:
         console.print(
             Panel(
-                "[red]ERROR[/red]\n\n"
+                "[red]ERROR[/]\n\n"
                 "LoomWG must be run as root.\n"
                 "Please run again with sudo.",
-                title="[bold]Permission Denied[/bold]"
+                title="[bold]Permission Denied[/]"
             )
         )
         return False
@@ -283,85 +356,84 @@ def check_root() -> bool:
 
 
 def show_header_info() -> None:
-    """Show system header information."""
-    from ..system.info import SystemDetector as InfoDetector
+    """Show system header information as a vertical list (no panel)."""
+    from ..system.info import SystemDetector
     from ..wireguard.manager import WireGuardManager
-
-    detector = InfoDetector()
+    
+    detector = SystemDetector()
     info = detector.detect()
     wg_manager = WireGuardManager()
-
-    # Build header columns
-    left = Text.assemble(
-        "Server: ", (info.hostname, "bold cyan"),
-    )
-    middle = Text.assemble(
-        "OS: ", (info.os_name.split()[0], "dim"),
-        " ", (info.os_version or "", "dim"),
-    )
-    right_parts = ["Kernel: "]
-    right_parts.append((info.kernel or "N/A", "dim"))
-    right = Text.assemble(*right_parts)
-
-    console.print(Panel(
-        Columns([left, middle, right], equal=True),
-        border_style="blue",
-        padding=(0, 1),
-    ))
-
+    
+    server_text = f"[bold {THEME['INFO']}]{info.hostname}[/]"
+    console.print(f"  Server: {server_text}")
+    console.print(f"  OS: {info.os_name.split()[0]} {info.os_version or ''}".strip())
+    console.print(f"  Kernel: {info.kernel or 'N/A'}")
+    
     if wg_manager.is_installed():
         interfaces = wg_manager.get_interfaces()
         status = f"{len(interfaces)} interface(s)" if interfaces else "no interfaces"
-        console.print(f"  [green]WireGuard:[/green] Installed ({status})")
+        console.print(f"  WireGuard: [bold {THEME['SUCCESS']}]Installed ({status})[/]")
     else:
-        console.print("  [yellow]WireGuard:[/yellow] Not installed")
+        console.print(f"  WireGuard: [bold {THEME['WARNING']}]Not installed[/]")
+    
     console.print()
 
 
 def menu_option(
-    number: int, title: str, description: str, command: str | None = None
+    number: int, title: str, description: str = "", command: str | None = None
 ) -> None:
-    """Render a selectable menu item with a subdued explanatory label."""
-    suffix = f"  [grey35]({command})[/grey35]" if command else ""
-    console.print(
-        f"  [purple]{number})[/purple] [bold]{title:<25}[/bold]"
-        f"[grey35]{description}[/grey35]{suffix}"
-    )
+    """Render a menu item with two-tab indentation."""
+    primary = THEME["PRIMARY"]
+    dim = THEME["DIM"]
+    
+    num = f"[bold {primary}] {number}.[/]"
+    title_text = f"[bold white]{title}[/]"
+    
+    line = f"  {num} {title_text}"
+    
+    # Two tabs (8 spaces) after title, then dim description
+    if description:
+        line += f"        [dim]{description}[/]"
+    if command:
+        line += f"        [dim]({command})[/]"
+    
+    console.print(line)
 
 def manage_interfaces() -> None:
     """Manage interface selection, creation, and deletion."""
     while True:
-        clear_screen()
+        show_banner()
         interfaces = configured_interfaces()
-        console.print(
-            Panel(
-                "[bold white]Manage WireGuard Interfaces[/bold white]\n"
-                "[grey70]Select an interface or manage the available VPN tunnels[/grey70]",
-                border_style="purple",
-                padding=(1, 2),
-            )
-        )
-        console.print()
-        for index, name in enumerate(interfaces, 1):
-            marker = " (selected)" if name == selected_interface() else ""
-            console.print(
-                f"  [purple]{index}.[/purple] "
-                f"[bold]Select {name}[/bold]"
-                f"[green]{marker}[/green]"
-            )
-        console.print()
-        console.print("  [purple]ci[/purple] [bold]Create Interface[/bold]")
-        console.print("  [purple]di[/purple] [bold]Delete selected interface[/bold]")
-        console.print()
-        console.print("  [purple]0.[/purple] Back")
-
-        try:
-            choice = input("Select option: ").strip()
-        except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+        
+        section_banner("Manage Interfaces", "WireGuard interface management")
+        
+        if not interfaces:
+            console.print(f"[{THEME['WARNING']}]No interfaces configured.[/]")
+            pause()
             return
-
-
+        
+        for index, name in enumerate(interfaces, 1):
+            marker = f" ([dim {THEME['DIM']}]selected[/])" if name == selected_interface() else ""
+            if name == selected_interface():
+                style_text = f"[{THEME['SUCCESS']}] {index}.[/]"
+            else:
+                style_text = f"[bold] {index}.[/]"
+            console.print(f"  {style_text} {name}{marker}")
+        
+        console.print()
+        console.print(f"  [bold {THEME['PRIMARY']}] ci.[/] Create Interface")
+        console.print(f"  [bold {THEME['PRIMARY']}] di.[/] Delete selected interface")
+        console.print()
+        console.print(f"  [bold {THEME['PRIMARY']}] 0.[/] Back")
+        console.print()
+        
+        console.print(f"[bold {THEME['PRIMARY']}]Select option:[/] ", end="")
+        try:
+            choice = input().strip()
+        except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+            console.print(f"[{THEME['ERROR']}]Input interrupted.[/]")
+            return
+        
         if choice.lower() == "ci":
             create_interface()
         elif choice.lower() == "di":
@@ -372,17 +444,18 @@ def manage_interfaces() -> None:
             try:
                 index = int(choice)
             except ValueError:
-                console.print("[red]Invalid selection.[/red]")
+                console.print(f"[{THEME['WARNING']}]Invalid selection.[/]")
                 pause()
                 continue
-
+            
             if not 1 <= index <= len(interfaces):
-                console.print("[red]Invalid selection.[/red]")
+                console.print(f"[{THEME['WARNING']}]Invalid selection.[/]")
                 pause()
                 continue
             set_selected_interface(interfaces[index - 1])
-            console.print(f"[green]✓ Selected {selected_interface()}[/green]")
+            console.print(f"[{THEME['SUCCESS']}]Selected {selected_interface()}[/]")
             pause()
+
 
 
 def delete_interface() -> None:
@@ -394,13 +467,13 @@ def delete_interface() -> None:
 
     interface = selected_interface()
     if interface == "wg0":
-        console.print("[yellow]The default wg0 interface cannot be deleted here.[/yellow]")
+        console.print("[yellow]The default wg0 interface cannot be deleted here.[/]")
         pause()
         return
 
     path = interface_config_path(interface)
     if not path.exists():
-        console.print(f"[red]Interface {interface} does not exist.[/red]")
+        console.print(f"[red]Interface {interface} does not exist.[/]")
         pause()
         return
 
@@ -409,23 +482,23 @@ def delete_interface() -> None:
     console.print("This removes the interface configuration, peer database, and client configs.")
     try:
         confirmation = input(f"Type DELETE {interface} to continue: ").strip()
-    except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+    except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+        console.print("[red]Input interrupted.[/]")
         pause()
         return
     if confirmation != f"DELETE {interface}":
-        console.print("[yellow]Interface deletion cancelled.[/yellow]")
+        console.print("[yellow]Interface deletion cancelled.[/]")
         pause()
         return
 
     manager = WireGuardManager()
     service = ServiceManager()
     if manager.is_interface_active(interface) and not manager.stop(interface):
-        console.print(f"[red]Could not stop {interface}; nothing was deleted.[/red]")
+        console.print(f"[red]Could not stop {interface}; nothing was deleted.[/]")
         pause()
         return
     if service.is_enabled(f"wg-quick@{interface}") and not service.disable(f"wg-quick@{interface}"):
-        console.print(f"[red]Could not disable wg-quick@{interface}; nothing was deleted.[/red]")
+        console.print(f"[red]Could not disable wg-quick@{interface}; nothing was deleted.[/]")
         pause()
         return
 
@@ -444,7 +517,7 @@ def delete_interface() -> None:
                 target.unlink()
         set_selected_interface("wg0")
         LoomLogger().info(f"WireGuard interface '{interface}' deleted", "server")
-        console.print(f"[green]✓ Interface {interface} deleted[/green]")
+        console.print(f"[green]✓ Interface {interface} deleted[/]")
     except OSError as exc:
-        console.print(f"[red]Failed to delete interface {interface}: {exc}[/red]")
+        console.print(f"[red]Failed to delete interface {interface}: {exc}[/]")
     pause()

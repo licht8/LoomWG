@@ -80,7 +80,7 @@ class PeerManager:
                 # Preserve private key when in-memory use is needed for config export.
                 self.peers[name] = Peer(**peer_data)
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             self.peers = {}
 
     def save(self) -> bool:
@@ -95,7 +95,7 @@ class PeerManager:
 
             return True
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def add_peer(self, peer: Peer) -> bool:

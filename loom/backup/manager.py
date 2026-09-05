@@ -58,7 +58,7 @@ class BackupManager:
 
             return backup_file
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return None
 
     def list_backups(self) -> list[tuple[str, datetime]]:
@@ -129,7 +129,7 @@ class BackupManager:
 
             return True
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def delete_backup(self, backup_file: Path) -> bool:
@@ -149,7 +149,7 @@ class BackupManager:
 
             return True
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def validate_backup(self, backup_file: Path) -> bool:
@@ -162,7 +162,7 @@ class BackupManager:
 
             return True
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     @staticmethod

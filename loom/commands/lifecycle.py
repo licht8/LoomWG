@@ -17,7 +17,7 @@ def remove_wireguard() -> None:
     console.print("This removes wg0, its service, LoomWG forwarding settings, and WireGuard packages.")
     if confirm("Continue with removal?"):
         result = WireGuardLifecycle().remove()
-        console.print(f"[green]✓ {result.message}[/green]" if result.success else f"[red]✗ {result.message}[/red]")
+        console.print(f"[green]✓ {result.message}[/]" if result.success else f"[red]✗ {result.message}[/]")
     pause()
 
 
@@ -32,10 +32,10 @@ def reinstall_wireguard() -> None:
         return
     result = WireGuardLifecycle().remove()
     if not result.success:
-        console.print(f"[red]✗ Reinstall stopped: {result.message}[/red]")
+        console.print(f"[red]✗ Reinstall stopped: {result.message}[/]")
         pause()
         return
-    console.print(f"[green]✓ {result.message}[/green]")
+    console.print(f"[green]✓ {result.message}[/]")
     install_wireguard()
 
 

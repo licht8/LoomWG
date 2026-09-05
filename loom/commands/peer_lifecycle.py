@@ -34,7 +34,7 @@ def disable_peer() -> None:
             name = input("Peer name: ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
@@ -49,15 +49,15 @@ def disable_peer() -> None:
         runtime_ok = WireGuardManager().remove_peer_from_interface(interface, peer.public_key) if peer else False
         config_ok = generator.remove_peer_from_server_config(config_path, peer.public_key) if peer and config_path.exists() else True
         if runtime_ok and config_ok and peer_mgr.disable_peer(name):
-            console.print(f"[green]✓ Peer '{name}' disabled[/green]")
+            console.print(f"[green]✓ Peer '{name}' disabled[/]")
 
             logger = LoomLogger()
             logger.info(f"Peer '{name}' disabled", "peer")
         else:
-            console.print("[red]✗ Failed to disable peer[/red]")
+            console.print("[red]✗ Failed to disable peer[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 
@@ -77,7 +77,7 @@ def enable_peer() -> None:
             name = input("Peer name: ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
@@ -87,15 +87,15 @@ def enable_peer() -> None:
 
         peer = peer_mgr.get_peer(name)
         if not peer:
-            console.print("[red]✗ Peer not found[/red]")
+            console.print("[red]✗ Peer not found[/]")
             pause()
             return
         if peer.revoked_at:
-            console.print("[red]✗ This peer has been revoked and cannot be re-enabled.[/red]")
+            console.print("[red]✗ This peer has been revoked and cannot be re-enabled.[/]")
             pause()
             return
         if peer.expires_at and datetime.fromisoformat(peer.expires_at) <= datetime.now():
-            console.print("[red]✗ Peer access has expired. Set a new expiry before enabling it.[/red]")
+            console.print("[red]✗ Peer access has expired. Set a new expiry before enabling it.[/]")
             pause()
             return
         interface = selected_interface()
@@ -105,17 +105,17 @@ def enable_peer() -> None:
         manager = WireGuardManager()
         runtime_ok = (not manager.is_interface_active(interface)) or manager.add_peer_to_interface(interface, peer.public_key, peer.ipv4_address, client_ipv6=peer.ipv6_address)
         if config_ok and runtime_ok and peer_mgr.enable_peer(name):
-            console.print(f"[green]✓ Peer '{name}' enabled[/green]")
+            console.print(f"[green]✓ Peer '{name}' enabled[/]")
             if not manager.is_interface_active(interface):
-                console.print(f"[yellow]{interface} is down; the peer will be applied when the interface starts.[/yellow]")
+                console.print(f"[yellow]{interface} is down; the peer will be applied when the interface starts.[/]")
 
             logger = LoomLogger()
             logger.info(f"Peer '{name}' enabled", "peer")
         else:
-            console.print("[red]✗ Failed to enable peer[/red]")
+            console.print("[red]✗ Failed to enable peer[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 
@@ -133,21 +133,21 @@ def revoke_peer() -> None:
             name = input("Peer name: ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
         peer = peer_mgr.get_peer(name)
         if not peer:
-            console.print("[red]Peer not found[/red]")
+            console.print("[red]Peer not found[/]")
             pause()
             return
         if peer.revoked_at:
-            console.print("[yellow]This peer is already revoked.[/yellow]")
+            console.print("[yellow]This peer is already revoked.[/]")
             pause()
             return
 
-        console.print(f"\n[bold]Revoke Peer[/bold]")
+        console.print(f"\n[bold]Revoke Peer[/]")
         console.print(f"Name: {peer.name}")
         console.print(f"Public Key: {peer.public_key}")
         if not confirm(f"Revoke peer '{name}' and disable its access immediately?"):
@@ -169,19 +169,19 @@ def revoke_peer() -> None:
                 raise RuntimeError("Failed to mark the peer as revoked in the database")
             logger = LoomLogger()
             logger.log_peer_revoked(name, peer.public_key)
-            console.print(f"[green]✓ Peer '{name}' revoked[/green]")
+            console.print(f"[green]✓ Peer '{name}' revoked[/]")
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             if config_path.exists() and original_config is not None:
                 config_path.write_text(original_config, encoding="utf-8")
                 config_path.chmod(0o600)
             peer_mgr.update_peer(name, original_peer)
             if manager.is_interface_active(interface):
                 manager.add_peer_to_interface(interface, original_peer.public_key, original_peer.ipv4_address, client_ipv6=original_peer.ipv6_address)
-            console.print("[red]✗ Revocation failed and changes were rolled back.[/red]")
+            console.print("[red]✗ Revocation failed and changes were rolled back.[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 
@@ -199,21 +199,21 @@ def rotate_peer_keys() -> None:
             name = input("Peer name: ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
         peer = peer_mgr.get_peer(name)
         if not peer:
-            console.print("[red]Peer not found[/red]")
+            console.print("[red]Peer not found[/]")
             pause()
             return
         if peer.revoked_at:
-            console.print("[red]Revoked peers cannot have their keys rotated.[/red]")
+            console.print("[red]Revoked peers cannot have their keys rotated.[/]")
             pause()
             return
 
-        console.print(f"\n[bold]Rotate Peer Keys[/bold]")
+        console.print(f"\n[bold]Rotate Peer Keys[/]")
         console.print(f"Name: {peer.name}")
         console.print(f"Public Key: {peer.public_key}")
         if not confirm(f"Generate and apply a new keypair for '{name}'?"):
@@ -288,9 +288,9 @@ def rotate_peer_keys() -> None:
 
             logger = LoomLogger()
             logger.log_peer_key_rotated(name, original_peer.public_key, keypair.public_key)
-            console.print(f"[green]✓ Peer '{name}' key rotation completed[/green]")
+            console.print(f"[green]✓ Peer '{name}' key rotation completed[/]")
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             if config_path.exists() and original_config is not None:
                 config_path.write_text(original_config, encoding="utf-8")
                 config_path.chmod(0o600)
@@ -300,12 +300,12 @@ def rotate_peer_keys() -> None:
                     manager.remove_peer_from_interface(interface, keypair.public_key)
                     manager.add_peer_to_interface(interface, original_peer.public_key, original_peer.ipv4_address, client_ipv6=original_peer.ipv6_address)
                 except Exception as exc:
-                    console.print(f"[red]Error: {exc}[/red]")
+                    console.print(f"[red]Error: {exc}[/]")
                     pass
-            console.print(f"[red]✗ Rotation failed and the prior state was restored: {exc}[/red]")
+            console.print(f"[red]✗ Rotation failed and the prior state was restored: {exc}[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 
@@ -325,7 +325,7 @@ def remove_peer() -> None:
             name = input("Peer name: ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
@@ -336,7 +336,7 @@ def remove_peer() -> None:
         peer = peer_mgr.get_peer(name)
 
         if not peer:
-            console.print("[red]Peer not found[/red]")
+            console.print("[red]Peer not found[/]")
             pause()
             return
 
@@ -353,7 +353,7 @@ def remove_peer() -> None:
             config_ok = generator.remove_peer_from_server_config(config_path, peer.public_key) if config_path.exists() else True
 
             if not (runtime_ok and config_ok):
-                console.print("[red]✗ Failed to remove peer from live interface or config[/red]")
+                console.print("[red]✗ Failed to remove peer from live interface or config[/]")
                 pause()
                 return
 
@@ -361,11 +361,11 @@ def remove_peer() -> None:
             if peer_mgr.remove_peer(name):
                 logger = LoomLogger()
                 logger.log_peer_removed(name)
-                console.print(f"[green]✓ Peer '{name}' removed[/green]")
+                console.print(f"[green]✓ Peer '{name}' removed[/]")
             else:
-                console.print("[red]✗ Failed to remove peer from database[/red]")
+                console.print("[red]✗ Failed to remove peer from database[/]")
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 

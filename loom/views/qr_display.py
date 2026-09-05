@@ -21,7 +21,7 @@ def show_qr_code() -> None:
         name = input("Peer name: ").strip()
 
     except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+        console.print("[red]Input interrupted.[/]")
         pause()
         return
 
@@ -29,12 +29,12 @@ def show_qr_code() -> None:
         return
     peer = peer_mgr.get_peer(name)
     if not peer:
-        console.print("[red]Peer not found[/red]")
+        console.print("[red]Peer not found[/]")
         pause()
         return
     config_path = ClientConfigStore().base_dir / f"{name}.conf"
     if not config_path.exists():
-        console.print("[yellow]No saved client config exists for this peer.[/yellow]")
+        console.print("[yellow]No saved client config exists for this peer.[/]")
         pause()
         return
     display_peer_qr_code(name, config_path.read_text(encoding="utf-8"))

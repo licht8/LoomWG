@@ -6,9 +6,10 @@ from rich.text import Text
 
 from ..wireguard.manager import WireGuardManager
 from ..backup.manager import BackupManager
-from ..cli.common import clear_screen, section_banner, pause
+from ..cli.common import clear_screen, section_banner, pause, THEME
 
 console = Console()
+
 
 def list_backups() -> None:
     """List available backups with summary."""
@@ -19,18 +20,18 @@ def list_backups() -> None:
         backups = backup_mgr.list_backups()
 
         if not backups:
-            console.print("[yellow]No backups found[/yellow]")
+            console.print(f"[yellow]No backups found[/]")
             pause()
             return
 
         # Summary line
-        console.print(f"[bold]Found {len(backups)} backup(s)[/bold]\n")
-        console.print(Rule(style="blue"))
+        console.print(f"[bold]Found {len(backups)} backup(s)[/]\n")
+        console.print(Rule(style=THEME['SECONDARY']))
 
-        table = Table(title="Available Backups", border_style="blue", show_header=True)
-        table.add_column("#", style="dim", width=3, no_wrap=True)
-        table.add_column("Filename", style="cyan")
-        table.add_column("Created", style="yellow")
+        table = Table(title="Available Backups", border_style=THEME['PRIMARY'], show_header=True)
+        table.add_column("#", style=THEME['DIM'], width=3, no_wrap=True)
+        table.add_column("Filename", style=THEME['INFO'])
+        table.add_column("Created", style=THEME['WARNING'])
 
         for i, (filename, created) in enumerate(backups, 1):
             table.add_row(
@@ -43,10 +44,8 @@ def list_backups() -> None:
         console.print(Rule())
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[{THEME['ERROR']}]Error: {e}[/]")
 
     pause()
-
-
 
 

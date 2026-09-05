@@ -18,12 +18,12 @@ def start_firewall() -> None:
         firewall = FirewalldManager()
 
         if firewall.start():
-            console.print("[green]✓ Firewall started[/green]")
+            console.print("[green]✓ Firewall started[/]")
         else:
-            console.print("[red]✗ Failed to start firewall[/red]")
+            console.print("[red]✗ Failed to start firewall[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 
@@ -36,12 +36,12 @@ def enable_firewall() -> None:
         firewall = FirewalldManager()
 
         if firewall.enable():
-            console.print("[green]✓ Firewall enabled on boot[/green]")
+            console.print("[green]✓ Firewall enabled on boot[/]")
         else:
-            console.print("[red]✗ Failed to enable firewall[/red]")
+            console.print("[red]✗ Failed to enable firewall[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 
@@ -55,12 +55,12 @@ def open_wg_port() -> None:
         config = ServerConfig.defaults()
 
         if firewall.open_port(config.listen_port):
-            console.print(f"[green]✓ Port {config.listen_port}/UDP opened[/green]")
+            console.print(f"[green]✓ Port {config.listen_port}/UDP opened[/]")
         else:
-            console.print("[red]✗ Failed to open port[/red]")
+            console.print("[red]✗ Failed to open port[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 

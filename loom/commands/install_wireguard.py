@@ -30,15 +30,15 @@ def install_wireguard() -> None:
     clear_screen()
     interface = selected_interface()
 
-    console.print("[bold]Installing WireGuard[/bold]\n")
+    console.print("[bold]Installing WireGuard[/]\n")
 
     detector = SystemDetector()
     checks = detector.check()
 
-    console.print("[bold]System Checks:[/bold]\n")
+    console.print("[bold]System Checks:[/]\n")
 
     for check in checks:
-        status = "[green]✓[/green]" if check.passed else "[red]✗[/red]"
+        status = "[green]✓[/]" if check.passed else "[red]✗[/]"
         console.print(f"{status} {check.name}: {check.message}")
 
     critical_failed = any(
@@ -49,7 +49,7 @@ def install_wireguard() -> None:
     )
 
     if critical_failed:
-        console.print("\n[red]System does not meet requirements[/red]")
+        console.print("\n[red]System does not meet requirements[/]")
         pause()
         return
 
@@ -66,7 +66,7 @@ def install_wireguard() -> None:
             Text.assemble("✓ Installation completed: ", (result.message, "green")),
             border_style="green",
         ))
-        console.print(f"[green]✓ {result.message}\n[/green]")
+        console.print(f"[green]✓ {result.message}\n[/]")
     else:
         console.print(Panel(
             Text.assemble("✗ Installation failed: ", (result.message, "red")),
@@ -78,18 +78,18 @@ def install_wireguard() -> None:
         pause()
         return
 
-    console.print(f"[green]✓ {result.message}[/green]\n")
+    console.print(f"[green]✓ {result.message}[/]\n")
 
     # Lazy import to break circular dependency with configure_server
     from ..commands.configure_server import prompt_server_config, validate_server_settings
 
     try:
-        console.print("\n[bold]Creating server configuration...[/bold]")
+        console.print("\n[bold]Creating server configuration...[/]")
         config = prompt_server_config()
         config_valid, config_errors = config.validate()
         config_errors.extend(validate_server_settings(config))
         if not config_valid or config_errors:
-            console.print("[red]Configuration invalid:[/red]")
+            console.print("[red]Configuration invalid:[/]")
             for error in config_errors:
                 console.print(f"  - {error}")
             pause()
@@ -114,7 +114,7 @@ def install_wireguard() -> None:
             errors.extend(server_errors)
 
         if not valid:
-            console.print("[red]Configuration validation failed:[/red]")
+            console.print("[red]Configuration validation failed:[/]")
             for error in errors:
                 console.print(f"  - {error}")
             pause()
@@ -122,23 +122,23 @@ def install_wireguard() -> None:
 
         config_path = interface_config_path(selected_interface())
         if not generator.write_config(config_path, server_conf):
-            console.print("[red]✗ Failed to write WireGuard configuration[/red]")
+            console.print("[red]✗ Failed to write WireGuard configuration[/]")
             pause()
             return
 
-        console.print("[green]✓ Server configuration created[/green]")
+        console.print("[green]✓ Server configuration created[/]")
 
         firewall = FirewalldManager()
         if not firewall.is_running():
             firewall.start()
         firewall.open_port(config.listen_port)
         firewall.enable_masquerading()
-        console.print("[green]✓ Firewall rules configured[/green]")
+        console.print("[green]✓ Firewall rules configured[/]")
 
         network = NetworkManager()
         network.enable_ip_forwarding()
         network.enable_ipv6_forwarding()
-        console.print("[green]✓ IP forwarding enabled[/green]")
+        console.print("[green]✓ IP forwarding enabled[/]")
 
         wg_manager = WireGuardManager()
         start_result = wg_manager.start_with_result(interface)
@@ -146,41 +146,41 @@ def install_wireguard() -> None:
 
         if runtime_ok:
             if start_result.already_running:
-                console.print(f"[green]✓ {interface} is already running[/green]")
+                console.print(f"[green]✓ {interface} is already running[/]")
             else:
-                console.print("[green]✓ WireGuard interface started successfully[/green]")
+                console.print("[green]✓ WireGuard interface started successfully[/]")
         else:
-            console.print(f"[red]✗ Failed to start WireGuard interface {interface}[/red]")
+            console.print(f"[red]✗ Failed to start WireGuard interface {interface}[/]")
             console.print(f"Return code: {start_result.return_code}")
             console.print(f"stdout: {start_result.stdout or '<empty>'}")
             console.print(f"stderr: {start_result.stderr or '<empty>'}")
-            console.print("\n[bold]Runtime verification:[/bold]")
+            console.print("\n[bold]Runtime verification:[/]")
             console.print(
                 f"wg show interfaces: {interface if start_result.wg_interface_exists else f'{interface} not present'}"
             )
             console.print(
                 f"ip link show {interface}: {'present' if start_result.link_exists else 'not present'}"
             )
-            console.print("\n[yellow]Installation completed with errors.[/yellow]")
-            console.print("[yellow]WireGuard is NOT currently running.[/yellow]")
+            console.print("\n[yellow]Installation completed with errors.[/]")
+            console.print("[yellow]WireGuard is NOT currently running.[/]")
             console.print("Run: wg show interfaces")
             console.print(f"Run: wg show {interface}")
             console.print(f"Run: ip link show {interface}")
 
         boot_enabled = ServiceManager().enable(f"wg-quick@{interface}")
         if boot_enabled:
-            console.print("[green]✓ WireGuard enabled on boot[/green]")
+            console.print("[green]✓ WireGuard enabled on boot[/]")
         else:
-            console.print("[yellow]⚠ Could not enable WireGuard at boot[/yellow]")
+            console.print("[yellow]⚠ Could not enable WireGuard at boot[/]")
 
         installation_ok = runtime_ok and boot_enabled
         LoomLogger().log_installation(installation_ok, str(config_path))
         if installation_ok:
-            console.print("\n[green]✓ WireGuard installation completed successfully[/green]")
+            console.print("\n[green]✓ WireGuard installation completed successfully[/]")
         elif runtime_ok:
-            console.print("\n[yellow]Installation completed with errors.[/yellow]")
+            console.print("\n[yellow]Installation completed with errors.[/]")
     except Exception as exc:
-        console.print(f"[red]✗ Installation failed: {exc}[/red]")
+        console.print(f"[red]✗ Installation failed: {exc}[/]")
         LoomLogger().log_installation(False, str(exc))
 
     pause()

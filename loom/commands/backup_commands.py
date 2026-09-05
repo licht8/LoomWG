@@ -22,26 +22,26 @@ def create_backup() -> None:
             description = input("Backup description (optional): ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
 
-        console.print("\n[bold]Creating backup...[/bold]")
+        console.print("\n[bold]Creating backup...[/]")
 
         backup_mgr = BackupManager()
         backup_file = backup_mgr.create_backup(description)
 
         if backup_file:
-            console.print(f"[green]✓ Backup created: {backup_file}[/green]")
+            console.print(f"[green]✓ Backup created: {backup_file}[/]")
 
             logger = LoomLogger()
             logger.info(f"Backup created: {backup_file}", "backup")
         else:
-            console.print("[red]✗ Failed to create backup[/red]")
+            console.print("[red]✗ Failed to create backup[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 
@@ -58,11 +58,11 @@ def restore_backup() -> None:
         backups = backup_mgr.list_backups()
 
         if not backups:
-            console.print("[yellow]No backups available[/yellow]")
+            console.print("[yellow]No backups available[/]")
             pause()
             return
 
-        console.print("[bold]Available Backups[/bold]\n")
+        console.print("[bold]Available Backups[/]\n")
 
         for i, (filename, created) in enumerate(backups, 1):
             print(f"  {i}) {filename} ({created.strftime('%Y-%m-%d %H:%M:%S')})")
@@ -71,7 +71,7 @@ def restore_backup() -> None:
             choice = input("\nSelect backup (number): ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
@@ -80,7 +80,7 @@ def restore_backup() -> None:
             idx = int(choice) - 1
 
             if idx < 0 or idx >= len(backups):
-                console.print("[red]Invalid selection[/red]")
+                console.print("[red]Invalid selection[/]")
                 pause()
                 return
 
@@ -88,21 +88,21 @@ def restore_backup() -> None:
             backup_file = backup_mgr.backup_dir / backup_filename
 
             if confirm("Restore from this backup? Current configuration will be backed up."):
-                console.print("\n[bold]Restoring...[/bold]")
+                console.print("\n[bold]Restoring...[/]")
 
                 if backup_mgr.restore_backup(backup_file):
-                    console.print("[green]✓ Restore successful[/green]")
+                    console.print("[green]✓ Restore successful[/]")
 
                     logger = LoomLogger()
                     logger.info(f"Backup restored: {backup_filename}", "backup")
                 else:
-                    console.print("[red]✗ Restore failed[/red]")
+                    console.print("[red]✗ Restore failed[/]")
 
         except ValueError:
-            console.print("[red]Invalid input[/red]")
+            console.print("[red]Invalid input[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 
@@ -119,11 +119,11 @@ def delete_backup() -> None:
         backups = backup_mgr.list_backups()
 
         if not backups:
-            console.print("[yellow]No backups available[/yellow]")
+            console.print("[yellow]No backups available[/]")
             pause()
             return
 
-        console.print("[bold]Available Backups[/bold]\n")
+        console.print("[bold]Available Backups[/]\n")
 
         for i, (filename, created) in enumerate(backups, 1):
             print(f"  {i}) {filename} ({created.strftime('%Y-%m-%d %H:%M:%S')})")
@@ -132,7 +132,7 @@ def delete_backup() -> None:
             choice = input("\nSelect backup to delete (number): ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
@@ -141,7 +141,7 @@ def delete_backup() -> None:
             idx = int(choice) - 1
 
             if idx < 0 or idx >= len(backups):
-                console.print("[red]Invalid selection[/red]")
+                console.print("[red]Invalid selection[/]")
                 pause()
                 return
 
@@ -150,18 +150,18 @@ def delete_backup() -> None:
 
             if confirm(f"Delete {backup_filename}? This cannot be undone."):
                 if backup_mgr.delete_backup(backup_file):
-                    console.print("[green]✓ Backup deleted[/green]")
+                    console.print("[green]✓ Backup deleted[/]")
 
                     logger = LoomLogger()
                     logger.info(f"Backup deleted: {backup_filename}", "backup")
                 else:
-                    console.print("[red]✗ Failed to delete backup[/red]")
+                    console.print("[red]✗ Failed to delete backup[/]")
 
         except ValueError:
-            console.print("[red]Invalid input[/red]")
+            console.print("[red]Invalid input[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 

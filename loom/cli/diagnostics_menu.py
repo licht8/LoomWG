@@ -2,6 +2,7 @@
 from rich.console import Console
 console = Console()
 
+from ..cli.common import THEME, show_banner
 from ..diagnostics import FirewallDiagnostics, NetworkDiagnostics, SystemDiagnostics, WireGuardDiagnostics
 from ..wireguard.manager import WireGuardManager
 from ..wireguard.server_config import ServerConfig
@@ -17,13 +18,14 @@ from ..commands.diagnostics_commands import (
 
 from ..cli.common import clear_screen, section_banner, menu_option, pause, show_header_info
 
+
 def diagnostics_menu() -> None:
     """Diagnostics menu."""
     while True:
-        clear_screen()
+        show_banner()
         show_header_info()
 
-        print("Diagnostics Menu\n")
+        section_banner("Diagnostics Menu")
         menu_option(1, "Full health check", "Run every diagnostic check")
         print()
         menu_option(2, "System diagnostics", "Check OS and service prerequisites")
@@ -31,15 +33,15 @@ def diagnostics_menu() -> None:
         menu_option(4, "WireGuard diagnostics", "Check the VPN interface")
         menu_option(5, "Firewall diagnostics", "Check firewall access and NAT")
         print()
-        print("  0) Back\n")
+        menu_option(0, "Back")
 
+        console.print()
         try:
             choice = input("Select option: ").strip()
-        except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+        except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+            console.print(f"[{THEME['ERROR']}]Input interrupted.[/]")
             pause()
             return
-
 
         if choice == "1":
             run_full_diagnostics()
@@ -54,9 +56,7 @@ def diagnostics_menu() -> None:
         elif choice == "0":
             break
         else:
-            print("Invalid option.")
+            console.print(f"[{THEME['WARNING']}]Invalid option.[/{THEME['WARNING']}]")
             pause()
-
-
 
 

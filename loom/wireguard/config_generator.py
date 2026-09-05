@@ -119,7 +119,7 @@ class ConfigGenerator:
 
             return True
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     @staticmethod
@@ -164,7 +164,7 @@ class ConfigGenerator:
             config_path.chmod(0o600)
             return True
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     @staticmethod
@@ -282,5 +282,5 @@ class ConfigGenerator:
 
             return backup_path
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return None

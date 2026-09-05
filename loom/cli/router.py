@@ -4,7 +4,7 @@ console = Console()
 
 import sys
 
-from ..cli.common import clear_screen, check_root, show_banner, show_header_info, menu_option, pause, selected_interface
+from ..cli.common import clear_screen, check_root, show_banner, show_header_info, menu_option, pause, selected_interface, section_banner, THEME
 from .server_menu import server_menu
 from .peers_menu import peers_menu
 from .firewall_menu import firewall_menu
@@ -12,6 +12,7 @@ from .diagnostics_menu import diagnostics_menu
 from .backup_menu import backup_menu
 from .logs_menu import logs_menu
 from .system_info_menu import system_info_menu
+
 
 def main_menu() -> None:
     """Main menu."""
@@ -22,7 +23,7 @@ def main_menu() -> None:
         show_banner()
         show_header_info()
 
-        print("Main Menu\n")
+        section_banner("Main Menu")
         menu_option(1, "Server", "Configure and operate WireGuard")
         print()
         menu_option(2, "Peers", "Create and manage VPN clients")
@@ -35,12 +36,13 @@ def main_menu() -> None:
         menu_option(6, "Logs", "View and export application activity")
         menu_option(7, "System Info", "Read-only server and VPN overview")
         print()
-        print("  0) Exit\n")
+        menu_option(0, "Exit", "Close application")
 
+        console.print()
         try:
             choice = input("Select option: ").strip()
-        except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+        except (EOFError, KeyboardInterrupt, OSError, UnicodeDecodeError):
+            console.print(f"[{THEME['ERROR']}]Input interrupted.[/]")
             pause()
             return
 
@@ -60,12 +62,10 @@ def main_menu() -> None:
         elif choice == "7":
             system_info_menu()
         elif choice == "0":
-            console.print("[yellow]Goodbye![/yellow]")
+            console.print(f"[yellow]Goodbye![/]")
             sys.exit(0)
         else:
-            print("Invalid option. Please try again.")
+            console.print(f"[{THEME['WARNING']}]Invalid option. Please try again.[/]")
             pause()
-
-
 
 

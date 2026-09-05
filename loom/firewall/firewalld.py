@@ -35,7 +35,7 @@ class FirewalldManager:
 
             return result.returncode == 0
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def is_running(self) -> bool:
@@ -51,7 +51,7 @@ class FirewalldManager:
 
             return result.returncode == 0
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def is_enabled(self) -> bool:
@@ -66,7 +66,7 @@ class FirewalldManager:
 
             return result.returncode == 0
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def start(self) -> bool:
@@ -80,7 +80,7 @@ class FirewalldManager:
 
             return result.returncode == 0
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def enable(self) -> bool:
@@ -94,7 +94,7 @@ class FirewalldManager:
 
             return result.returncode == 0
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def open_port(self, port: int, protocol: str = "udp") -> bool:
@@ -117,7 +117,7 @@ class FirewalldManager:
             # Reload firewall
             return self.reload()
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def close_port(self, port: int, protocol: str = "udp") -> bool:
@@ -140,7 +140,7 @@ class FirewalldManager:
             # Reload firewall
             return self.reload()
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def is_port_open(self, port: int, protocol: str = "udp") -> bool:
@@ -159,7 +159,7 @@ class FirewalldManager:
 
             return result.returncode == 0
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def enable_masquerading(self, zone: str = "public") -> bool:
@@ -182,7 +182,7 @@ class FirewalldManager:
 
             return self.reload()
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def disable_masquerading(self, zone: str = "public") -> bool:
@@ -205,7 +205,7 @@ class FirewalldManager:
 
             return self.reload()
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def is_masquerading_enabled(self, zone: str = "public") -> bool:
@@ -225,7 +225,7 @@ class FirewalldManager:
 
             return result.returncode == 0
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def reload(self) -> bool:
@@ -239,7 +239,7 @@ class FirewalldManager:
 
             return result.returncode == 0
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False
 
     def get_status(self) -> FirewallStatus:

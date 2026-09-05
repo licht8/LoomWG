@@ -42,20 +42,20 @@ def download_peer_config() -> None:
         name = input("Peer name: ").strip()
 
     except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+        console.print("[red]Input interrupted.[/]")
         pause()
         return
 
     path = ClientConfigStore().base_dir / f"{name}.conf"
     if not peer_mgr.get_peer(name):
-        console.print("[red]Peer not found[/red]")
+        console.print("[red]Peer not found[/]")
     elif not path.exists():
-        console.print("[yellow]No saved client config exists. Private keys are not stored after creation, so create a replacement peer instead.[/yellow]")
+        console.print("[yellow]No saved client config exists. Private keys are not stored after creation, so create a replacement peer instead.[/]")
     else:
         content = path.read_text(encoding="utf-8")
         qr_path = ClientConfigStore().save_qr_code(name, content)
-        console.print(f"[green]✓ Client configuration: {path}[/green]")
-        if qr_path: console.print(f"[green]✓ QR code regenerated: {qr_path}[/green]")
+        console.print(f"[green]✓ Client configuration: {path}[/]")
+        if qr_path: console.print(f"[green]✓ QR code regenerated: {qr_path}[/]")
     pause()
 
 
@@ -71,28 +71,28 @@ def set_peer_expiry() -> None:
         name = input("Peer name: ").strip()
 
     except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+        console.print("[red]Input interrupted.[/]")
         pause()
         return
 
     peer = peer_mgr.get_peer(name)
     if not peer:
-        console.print("[red]Peer not found[/red]")
+        console.print("[red]Peer not found[/]")
     else:
         try:
             raw = input("Expiry (YYYY-MM-DD, blank to clear): ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return
 
         try:
             expiry = datetime.fromisoformat(raw).replace(hour=23, minute=59, second=59).isoformat() if raw else None
             peer_mgr.set_expiry(name, expiry)
-            console.print(f"[green]✓ Expiry {'cleared' if not expiry else 'set to ' + expiry}[/green]")
+            console.print(f"[green]✓ Expiry {'cleared' if not expiry else 'set to ' + expiry}[/]")
         except ValueError:
-            console.print("[red]Use YYYY-MM-DD.[/red]")
+            console.print("[red]Use YYYY-MM-DD.[/]")
     pause()
 
 

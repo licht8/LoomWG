@@ -6,9 +6,10 @@ from rich.console import Console
 from rich.table import Table
 from rich.rule import Rule
 from rich.text import Text
+from rich.panel import Panel
 
 from ..logging_system.logger import LoomLogger
-from ..cli.common import clear_screen, section_banner, pause, confirm
+from ..cli.common import clear_screen, section_banner, pause, confirm, THEME
 from ..wireguard.manager import WireGuardManager
 from ..wireguard.server_config import ServerConfig
 from ..firewall.firewalld import FirewalldManager
@@ -24,9 +25,11 @@ def show_firewall_status() -> None:
     try:
         firewall = FirewalldManager()
 
-        console.print("[bold]Firewall Status[/bold]\n")
-        console.print(f"Running: {'[green]Yes[/green]' if firewall.is_running() else '[red]No[/red]'}")
-        console.print(f"Enabled: {'[green]Yes[/green]' if firewall.is_enabled() else '[red]No[/red]'}")
+        console.print(f"[bold]Firewall Status[/]\n")
+        running_text = f"[{THEME['SUCCESS']}]Yes[/]" if firewall.is_running() else f"[{THEME['ERROR']}]No[/]"
+        enabled_text = f"[{THEME['SUCCESS']}]Yes[/]" if firewall.is_enabled() else f"[{THEME['ERROR']}]No[/]"
+        console.print(f"Running: {running_text}")
+        console.print(f"Enabled: {enabled_text}")
 
         config = ServerConfig.defaults()
 
@@ -34,17 +37,14 @@ def show_firewall_status() -> None:
             port_open = firewall.is_port_open(config.listen_port)
             masq = firewall.is_masquerading_enabled()
 
-            console.print(
-                f"Port {config.listen_port}/UDP: {'[green]Open[/green]' if port_open else '[red]Closed[/red]'}"
-            )
-            console.print(
-                f"Masquerading: {'[green]Enabled[/green]' if masq else '[red]Disabled[/red]'}"
-            )
+            port_text = f"[{THEME['SUCCESS']}]Open[/]" if port_open else f"[{THEME['ERROR']}]Closed[/]"
+            masq_text = f"[{THEME['SUCCESS']}]Enabled[/]" if masq else f"[{THEME['WARNING']}]Disabled[/]"
+            console.print(f"Port {config.listen_port}/UDP: {port_text}")
+            console.print(f"Masquerading: {masq_text}")
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[{THEME['ERROR']}]Error: {e}[/]")
 
     pause()
-
 
 
 def view_logs() -> None:
@@ -56,7 +56,7 @@ def view_logs() -> None:
         logs = logger.list_recent(50)
 
         if not logs:
-            console.print("[yellow]No logs found[/yellow]")
+            console.print(f"[yellow]No logs found[/]")
             pause()
             return
 
@@ -67,36 +67,48 @@ def view_logs() -> None:
             if level in by_level:
                 by_level[level].append(log)
 
+        # Color mapping for severity
+        color_map = {
+            "ERROR": THEME["ERROR"],
+            "WARNING": THEME["WARNING"],
+            "INFO": THEME["SUCCESS"],
+        }
+
+        # Icon mapping (raw text, no f-string tags)
+        icon_map = {
+            "ERROR": "\u2717",
+            "WARNING": "\u26a0",
+            "INFO": "\u2713",
+        }
+
         # Print each group in a styled panel
         for level, level_logs in by_level.items():
             if not level_logs:
                 continue
 
-            color = {"ERROR": "red", "WARNING": "yellow", "INFO": "green"}.get(level, "white")
-            icon = {"ERROR": "[red]\u2717[/red]", "WARNING": "[yellow]\u26a0[/yellow]", "INFO": "[green]\u2713[/green]"}.get(level, "[dim]\u2022[/dim]")
+            color = color_map.get(level, THEME["TEXT"])
+            icon = icon_map.get(level, "\u2022")
 
-            panel_title = Text.assemble(
-                Text(icon), f" {level} ({len(level_logs)})",
-                style=f"bold {color}",
-            )
+            # Single f-string title with ONE close tag
+            title_text = f"[bold {color}]{icon} {level} ({len(level_logs)})[/]"
 
             lines = []
             for log in level_logs[-10:]:  # Show last 10 per level
                 ts = log.get("timestamp", "")[:19]
                 msg = log.get("message", "")
                 cat = log.get("category", "")
-                lines.append(f"[dim]{ts}[/] [{cat}] {msg}")
+                lines.append(f"  [dim]{ts}[/] [{cat}] {msg}")
 
             console.print(Panel(
                 "\n".join(lines),
-                title=panel_title,
+                title=title_text,
                 border_style=color,
                 padding=(0, 1),
             ))
             console.print()
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/]")
 
     pause()
 
@@ -109,15 +121,14 @@ def clear_logs() -> None:
             logger = LoomLogger()
 
             if logger.clear_logs():
-                console.print("[green]✓ Logs cleared[/green]")
+                console.print(f"[{THEME['SUCCESS']}]Logs cleared[/]")
             else:
-                console.print("[red]✗ Failed to export logs[/red]")
+                console.print(f"[{THEME['ERROR']}]Failed to export logs[/]")
 
         except Exception as e:
-            console.print(f"[red]Error: {e}[/red]")
+            console.print(f"[{THEME['ERROR']}]Error: {e}[/]")
 
     pause()
-
 
 
 def export_logs() -> None:
@@ -129,7 +140,7 @@ def export_logs() -> None:
             filename = input("Export filename (default: loomwg_logs.json): ").strip()
 
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print(f"[{THEME['ERROR']}]Input interrupted.[/]")
             pause()
             return
 
@@ -141,11 +152,13 @@ def export_logs() -> None:
         export_path = Path(filename)
 
         if logger.export_logs(export_path):
-            console.print(f"[green]✓ Logs exported to {filename}[/green]")
+            console.print(f"[{THEME['SUCCESS']}]Logs exported to {filename}[/]")
         else:
-            console.print("[red]✗ Failed to export logs[/red]")
+            console.print(f"[{THEME['ERROR']}]Failed to export logs[/]")
 
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[{THEME['ERROR']}]Error: {e}[/]")
 
     pause()
+
+

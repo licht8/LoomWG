@@ -33,7 +33,7 @@ def rotate_server_keys() -> None:
     wg_manager = WireGuardManager()
 
     if not config_path.exists():
-        console.print("[yellow]No WireGuard configuration exists for wg0.[/yellow]")
+        console.print("[yellow]No WireGuard configuration exists for wg0.[/]")
         pause()
         return
 
@@ -56,19 +56,19 @@ def rotate_server_keys() -> None:
         confirmation = input("Type ROTATE to continue: ").strip()
 
     except (EOFError, KeyboardInterrupt, OSError):
-        console.print("[red]Input interrupted.[/red]")
+        console.print("[red]Input interrupted.[/]")
         pause()
         return
 
     if confirmation != "ROTATE":
-        console.print("[yellow]Server key rotation cancelled.[/yellow]")
+        console.print("[yellow]Server key rotation cancelled.[/]")
         pause()
         return
 
     backup_mgr = BackupManager()
     backup_file = backup_mgr.create_backup(description="Server key rotation pre-checkpoint")
     if backup_file is None:
-        console.print("[red]✗ Failed to create a backup before rotating the server key.[/red]")
+        console.print("[red]✗ Failed to create a backup before rotating the server key.[/]")
         pause()
         return
 
@@ -151,7 +151,7 @@ def rotate_server_keys() -> None:
                 wg_manager.sync(interface)
             except Exception:
                 pass
-        console.print(f"[red]✗ Server key rotation failed and the previous state was restored: {exc}[/red]")
+        console.print(f"[red]✗ Server key rotation failed and the previous state was restored: {exc}[/]")
         LoomLogger().error("Server key rotation failed and was rolled back", "server", details=str(exc))
 
     pause()

@@ -30,7 +30,7 @@ class KeyManager:
 
             return result.stdout.strip()
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             raise RuntimeError(f"Failed to generate private key: {e}")
 
     @staticmethod
@@ -48,7 +48,7 @@ class KeyManager:
 
             return result.stdout.strip()
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             raise RuntimeError(f"Failed to generate public key: {e}")
 
     @staticmethod
@@ -65,7 +65,7 @@ class KeyManager:
 
             return result.stdout.strip()
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             raise RuntimeError(f"Failed to generate preshared key: {e}")
 
     @classmethod
@@ -93,5 +93,5 @@ class KeyManager:
             decoded = base64.b64decode(key)
             return len(decoded) == 32
         except Exception as exc:
-            console.print(f"[red]Error: {exc}[/red]")
+            console.print(f"[red]Error: {exc}[/]")
             return False

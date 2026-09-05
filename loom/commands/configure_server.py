@@ -30,12 +30,12 @@ def configure_server() -> None:
     wg_manager = WireGuardManager()
 
     if Path("/etc/wireguard/wg0.conf").exists():
-        console.print("[yellow]WireGuard server is already configured at /etc/wireguard/wg0.conf.[/yellow]")
+        console.print("[yellow]WireGuard server is already configured at /etc/wireguard/wg0.conf.[/]")
         pause()
         return
 
     if not wg_manager.is_installed():
-        console.print("[yellow]WireGuard is not installed. Install first? (y/n)[/yellow]")
+        console.print("[yellow]WireGuard is not installed. Install first? (y/n)[/]")
 
         if confirm():
             install_wireguard()
@@ -51,7 +51,7 @@ def configure_server() -> None:
     valid = valid and not errors
 
     if not valid:
-        console.print("[red]Configuration invalid:[/red]")
+        console.print("[red]Configuration invalid:[/]")
 
         for error in errors:
             console.print(f"  - {error}")
@@ -60,7 +60,7 @@ def configure_server() -> None:
         return
 
     # Generate keys
-    console.print("\n[bold]Generating keys...[/bold]")
+    console.print("\n[bold]Generating keys...[/]")
 
     try:
         key_mgr = KeyManager()
@@ -69,14 +69,14 @@ def configure_server() -> None:
         config.private_key = keypair.private_key
         config.public_key = keypair.public_key
 
-        console.print("[green]✓ Keys generated[/green]")
+        console.print("[green]✓ Keys generated[/]")
     except Exception as e:
-        console.print(f"[red]✗ Failed to generate keys: {e}[/red]")
+        console.print(f"[red]✗ Failed to generate keys: {e}[/]")
         pause()
         return
 
     # Generate configuration
-    console.print("[bold]Generating configuration...[/bold]")
+    console.print("[bold]Generating configuration...[/]")
 
     try:
         gen = ConfigGenerator()
@@ -99,7 +99,7 @@ def configure_server() -> None:
             errors.extend(server_errors)
 
         if not valid:
-            console.print("[red]Configuration invalid:[/red]")
+            console.print("[red]Configuration invalid:[/]")
 
             for error in errors:
                 console.print(f"  - {error}")
@@ -112,58 +112,58 @@ def configure_server() -> None:
         config_path = interface_config_path(interface)
 
         if not gen.write_config(config_path, conf_content):
-            console.print("[red]✗ Failed to write configuration[/red]")
+            console.print("[red]✗ Failed to write configuration[/]")
             pause()
             return
 
-        console.print("[green]✓ Configuration written[/green]")
+        console.print("[green]✓ Configuration written[/]")
 
         # Log
         logger = LoomLogger()
         logger.log_installation(True, f"Server config: {config_path}")
 
     except Exception as e:
-        console.print(f"[red]✗ Failed: {e}[/red]")
+        console.print(f"[red]✗ Failed: {e}[/]")
         pause()
         return
 
     # Enable firewall
-    console.print("\n[bold]Configuring firewall...[/bold]")
+    console.print("\n[bold]Configuring firewall...[/]")
 
     try:
         firewall = FirewalldManager()
 
         if not firewall.is_running():
-            console.print("[yellow]Starting firewalld...[/yellow]")
+            console.print("[yellow]Starting firewalld...[/]")
             firewall.start()
 
         if firewall.open_port(config.listen_port):
-            console.print("[green]✓ Port opened[/green]")
+            console.print("[green]✓ Port opened[/]")
         else:
-            console.print("[yellow]⚠ Could not open port[/yellow]")
+            console.print("[yellow]⚠ Could not open port[/]")
 
         if firewall.enable_masquerading():
-            console.print("[green]✓ Masquerading enabled[/green]")
+            console.print("[green]✓ Masquerading enabled[/]")
         else:
-            console.print("[yellow]⚠ Could not enable masquerading[/yellow]")
+            console.print("[yellow]⚠ Could not enable masquerading[/]")
     except Exception as e:
-        console.print(f"[yellow]⚠ Firewall configuration failed: {e}[/yellow]")
+        console.print(f"[yellow]⚠ Firewall configuration failed: {e}[/]")
 
     # Enable IP forwarding
-    console.print("[bold]Enabling IP forwarding...[/bold]")
+    console.print("[bold]Enabling IP forwarding...[/]")
 
     try:
         network = NetworkManager()
 
         if network.enable_ip_forwarding():
-            console.print("[green]✓ IPv4 forwarding enabled[/green]")
+            console.print("[green]✓ IPv4 forwarding enabled[/]")
 
         if network.enable_ipv6_forwarding():
-            console.print("[green]✓ IPv6 forwarding enabled[/green]")
+            console.print("[green]✓ IPv6 forwarding enabled[/]")
     except Exception as e:
-        console.print(f"[yellow]⚠ Could not enable forwarding: {e}[/yellow]")
+        console.print(f"[yellow]⚠ Could not enable forwarding: {e}[/]")
 
-    console.print("\n[green]✓ Server configured successfully![/green]")
+    console.print("\n[green]✓ Server configured successfully![/]")
     pause()
 
 
@@ -209,7 +209,7 @@ def prompt_server_config() -> ServerConfig:
         try:
             value = input(f"{label} [{default}]: ").strip()
         except (EOFError, KeyboardInterrupt, OSError):
-            console.print("[red]Input interrupted.[/red]")
+            console.print("[red]Input interrupted.[/]")
             pause()
             return None
         return value or default
